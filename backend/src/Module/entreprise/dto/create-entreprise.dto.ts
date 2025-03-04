@@ -3,5 +3,6 @@ export class CreateEntrepriseDto {
     contact: string;
     numTel: string;
     adresse: string;
+    raisonSociale: string;
   }
   

@@ -29,7 +29,7 @@ const ListModerateur = () => {
 
         setModerateurs(response.data);
         setEntreprises(entreprisesResponse.data);
-        console.log("Entreprises:", entreprisesResponse.data); // Log fetched entreprises
+        console.log("Entreprises:", entreprisesResponse.data);
 
 
       } catch (err) {

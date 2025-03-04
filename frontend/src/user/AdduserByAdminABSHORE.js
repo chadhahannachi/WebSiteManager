@@ -4,28 +4,59 @@ import { Formik } from "formik";
 import * as yup from "yup";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Header from '../components/Header';
+import { jwtDecode } from "jwt-decode";
+import axios from "axios";
 
 const SignupForm = () => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
-  const [entreprises, setEntreprises] = useState([]);
+  const [userEntreprise, setUserEntreprise] = useState("Entreprise");
+  const [entreprise, setEntreprise] = useState();
+  const [initialValues, setInitialValues] = useState({
+    nom: "",
+    email: "",
+    password: "",
+    nomEntreprise: "",
+    role: "",
+  });
 
   useEffect(() => {
-    const fetchEntreprises = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/entreprises');
-        const data = await response.json();
-        if (response.ok) {
-          setEntreprises(data);
-        } else {
-          console.error("Erreur lors du chargement des entreprises:", data.message);
+    const fetchUserData = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const decodedToken = jwtDecode(token);
+          const userId = decodedToken.sub;
+          const response = await axios.get(`http://localhost:5000/auth/user/${userId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          setUserEntreprise(response.data.entreprise);
+        } catch (error) {
+          console.error("Erreur lors de la récupération des données de l'utilisateur :", error);
         }
-      } catch (error) {
-        console.error("Erreur réseau lors du chargement des entreprises:", error);
       }
     };
-  
-    fetchEntreprises();
+    fetchUserData();
   }, []);
+
+  useEffect(() => {
+    const fetchEntreprise = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/entreprises/${userEntreprise}`);
+        setEntreprise(response.data);
+        // Mettre à jour les initialValues avec le nom de l'entreprise
+        setInitialValues(prevValues => ({
+          ...prevValues,
+          nomEntreprise: response.data.nom,
+        }));
+      } catch (err) {
+        console.error("Erreur lors de la récupération de l'utilisateur:", err);
+      }
+    };
+
+    fetchEntreprise();
+  }, [userEntreprise]);
 
   const handleFormSubmit = async (values) => {
     try {
@@ -36,7 +67,7 @@ const SignupForm = () => {
         },
         body: JSON.stringify(values),
       });
-  
+
       const data = await response.json();
       if (response.ok) {
         console.log('Inscription réussie:', data);
@@ -59,6 +90,7 @@ const SignupForm = () => {
         onSubmit={handleFormSubmit}
         initialValues={initialValues}
         validationSchema={checkoutSchema}
+        enableReinitialize // Permet de réinitialiser les valeurs initiales lorsque initialValues change
       >
         {({
           values,
@@ -116,21 +148,21 @@ const SignupForm = () => {
                 helperText={touched.password && errors.password}
                 sx={{ gridColumn: "span 2" }}
               />
+
               <FormControl fullWidth variant="filled" sx={{ gridColumn: "span 2" }}>
                 <InputLabel>Nom de l'entreprise</InputLabel>
                 <Select
                   value={values.nomEntreprise}
                   onChange={handleChange}
                   name="nomEntreprise"
+                  disabled // Désactiver le champ pour empêcher la modification manuelle
                 >
-                  <MenuItem value="">Sélectionner une entreprise</MenuItem>
-                  {entreprises.map((entreprise) => (
-                    <MenuItem key={entreprise._id} value={entreprise.nom}>
-                      {entreprise.nom}
-                    </MenuItem>
-                  ))}
+                  <MenuItem value={values.nomEntreprise}>
+                    {values.nomEntreprise}
+                  </MenuItem>
                 </Select>
               </FormControl>
+
               <FormControl fullWidth variant="filled" sx={{ gridColumn: "span 2" }}>
                 <InputLabel>Rôle</InputLabel>
                 <Select
@@ -139,9 +171,7 @@ const SignupForm = () => {
                   name="role"
                 >
                   <MenuItem value="superadminabshore">Super Admin ABshore</MenuItem>
-                  <MenuItem value="superadminentreprise">Super Admin Entreprise</MenuItem>
                   <MenuItem value="moderateur">Modérateur</MenuItem>
-                  <MenuItem value="visiteur">Visiteur</MenuItem>
                 </Select>
               </FormControl>
             </Box>
@@ -164,13 +194,5 @@ const checkoutSchema = yup.object().shape({
   nomEntreprise: yup.string().required("required"),
   role: yup.string().required("required"),
 });
-
-const initialValues = {
-  nom: "",
-  email: "",
-  password: "",
-  nomEntreprise: "",
-  role: "visiteur",
-};
 
 export default SignupForm;

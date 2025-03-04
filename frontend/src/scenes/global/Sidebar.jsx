@@ -19,6 +19,26 @@ import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import BusinessIcon from '@mui/icons-material/Business';
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
+import VerticalSplitIcon from '@mui/icons-material/VerticalSplit';
+import NoteAddIcon from '@mui/icons-material/NoteAdd';
+import WidgetsIcon from '@mui/icons-material/Widgets';
+import DynamicFeedIcon from '@mui/icons-material/DynamicFeed';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import EmojiObjectsIcon from '@mui/icons-material/EmojiObjects';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import FiberNewIcon from '@mui/icons-material/FiberNew';
+import EventNoteIcon from '@mui/icons-material/EventNote';
+import CategoryIcon from '@mui/icons-material/Category';
+import HandshakeIcon from '@mui/icons-material/Handshake';
+import GroupsIcon from '@mui/icons-material/Groups';
+import TranslateIcon from '@mui/icons-material/Translate';
+import InterpreterModeIcon from '@mui/icons-material/InterpreterMode';
+import ListAltIcon from '@mui/icons-material/ListAlt';
+import HorizontalSplitIcon from '@mui/icons-material/HorizontalSplit';
+import CardMembershipIcon from '@mui/icons-material/CardMembership';
+import CookieIcon from '@mui/icons-material/Cookie';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import MapsHomeWorkIcon from '@mui/icons-material/MapsHomeWork';
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -51,18 +71,13 @@ const Sidebar = () => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          // Décoder le token pour obtenir l'ID de l'utilisateur
           const decodedToken = jwtDecode(token);
-          const userId = decodedToken.sub; // Assurez-vous que le token contient l'ID de l'utilisateur
-
-          // Envoyer une requête GET pour récupérer les informations de l'utilisateur
+          const userId = decodedToken.sub;
           const response = await axios.get(`http://localhost:5000/auth/user/${userId}`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
-
-          // Mettre à jour les états avec les données de l'utilisateur
           setUserName(response.data.nom);
           setUserRole(response.data.role);
         } catch (error) {
@@ -70,7 +85,6 @@ const Sidebar = () => {
         }
       }
     };
-
     fetchUserData();
   }, []);
 
@@ -96,7 +110,6 @@ const Sidebar = () => {
     >
       <ProSidebar collapsed={isCollapsed}>
         <Menu iconShape="square">
-          {/* LOGO AND MENU ICON */}
           <MenuItem
             onClick={() => setIsCollapsed(!isCollapsed)}
             icon={isCollapsed ? <MenuOutlinedIcon /> : undefined}
@@ -157,14 +170,19 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
-            <Item
-              title="Entreprises"
-              to="/EntrepriseManager"
-              icon={<BusinessIcon/>}
-              selected={selected}
-              setSelected={setSelected}
-            />
-            <Item
+          
+            {userRole === "superadminabshore" && (
+              <>
+                <Item
+                  title="Entreprises"
+                  to="/EntrepriseManager"
+                  icon={<BusinessIcon/>}
+                  selected={selected}
+                  setSelected={setSelected}
+                />
+              </>
+            )}
+            {/* <Item
               title="Contacts Information"
               to="/contacts"
               icon={<ContactsOutlinedIcon />}
@@ -177,6 +195,14 @@ const Sidebar = () => {
               icon={<ReceiptOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
+            /> */}
+
+            <Item
+              title="My Company"
+              to="/mycompany"
+              icon={<MapsHomeWorkIcon />}
+              selected={selected}
+              setSelected={setSelected}
             />
 
             <Typography
@@ -186,13 +212,28 @@ const Sidebar = () => {
             >
               Pages
             </Typography>
-            <Item
-              title="Profile Form"
-              to="/form"
-              icon={<PersonOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
+
+            {userRole === "superadminabshore" && (
+              <Item
+                title="Create User Form"
+                to="/registration"
+                icon={<PersonOutlinedIcon />}
+                selected={selected}
+                setSelected={setSelected}
+              />
+            )}
+
+            {userRole === "superadminentreprise" && (
+              <Item
+                title="Add Member"
+                to="/AddMemberByAdminEnt"
+                icon={<PersonOutlinedIcon />}
+                selected={selected}
+                setSelected={setSelected}
+              />
+            )}
+            
+            
             <Item
               title="Calendar"
               to="/calendar"
@@ -200,6 +241,86 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
+
+            <Item
+              title="Pages"
+              to="/pages"
+              icon={<NoteAddIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+            <Item
+              title="Slides"
+              to="/slides"
+              icon={<VerticalSplitIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+
+            <Item
+              title="Services"
+              to="/services"
+              icon={<LocalOfferIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+
+            <Item
+              title="Solutions"
+              to="/solutions"
+              icon={<EmojiObjectsIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+            
+            <Item
+              title="Unités"
+              to="/unites"
+              icon={<AccountBalanceWalletIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+            
+            <Item
+              title="Actualités"
+              to="/actualites"
+              icon={<FiberNewIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+            
+            <Item
+              title="Evenements"
+              to="/evenements"
+              icon={<EventNoteIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+            
+            <Item
+              title="Articles"
+              to="/articles"
+              icon={<CategoryIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+
+            <Item
+              title="Partenariats"
+              to="/partenariats"
+              icon={<HandshakeIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+            
+            <Item
+              title="Témoignages"
+              to="/temoignages"
+              icon={<InterpreterModeIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+            
             <Item
               title="FAQ Page"
               to="/faq"
@@ -208,6 +329,73 @@ const Sidebar = () => {
               setSelected={setSelected}
             />
 
+            <Item
+              title="Languages Manager"
+              to="/langues"
+              icon={<TranslateIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+
+            <Item
+              title="Forms Manager"
+              to="/forms"
+              icon={<ListAltIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />  
+          
+            <Item
+              title="NavbarManager"
+              to="/navbarmanager"
+              icon={<HorizontalSplitIcon/>}
+              selected={selected}
+              setSelected={setSelected}
+            />
+  
+            <Item
+              title="Menus"
+              to="/menus"
+              icon={<WidgetsIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+
+            <Item
+              title="Newsletters Manager"
+              to="/newsletters"
+              icon={<CardMembershipIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+
+            
+            <Item
+              title="Cookies Manager"
+              to="/cookiesmanager"
+              icon={<CookieIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+
+            <Item
+              title="Autres Types de données"
+              to="/differentTypeDonnees"
+              icon={<AccountTreeIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+
+            <Item
+              title="Gestion des Carroussels"
+              to="/carroussels"
+              icon={<DynamicFeedIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+
+
+            
             <Typography
               variant="h6"
               color={colors.grey[300]}

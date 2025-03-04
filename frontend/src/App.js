@@ -17,12 +17,18 @@ import { ColorModeContext, useMode } from "./theme";
 import Calendar from "./scenes/calendar/calendar";
 import ListAdminABshore from "./listuser/listSuperAdminABshore";
 import UpdateUser from "./listuser/UpdateUser";
-import SignupForm from "./user/registration";
+import SignupForm from "./user/AdduserByAdminABSHORE";
 import ListSuperAdminEnt from "./listuser/listSuperAdminEnt";
 import ListModerateur from "./listuser/listModerateur";
 import LoginForm from './user/login';
 import { RequestPasswordReset, ResetPassword } from "./user/resetpwd";
 import EntrepriseManager from "./entreprise/EntrepriseManager";
+import Profile from "./user/profile";
+import AddSuperAdminCompany from "./user/AddSadminToCompany";
+import AddMember from "./user/AddSadminToCompany";
+import AddMemberByAdminEnt from "./user/AddMemberByAdminEnt";
+import MyCompany from "./entreprise/MyCompany";
+import BlogPostOne from "./componentTest";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -159,6 +165,16 @@ function App() {
               </Layout>
             }
           />
+
+          <Route
+            path="/AddMemberByAdminEnt"
+            element={
+              <Layout>
+                <AddMemberByAdminEnt />
+              </Layout>
+            }
+          />
+
           <Route
             path="/ListSuperAdminEnt"
             element={
@@ -185,10 +201,25 @@ function App() {
             }
           />
 
+          <Route
+            path="/profile"
+            element={
+              <Layout>
+                <Profile />
+              </Layout>
+            }
+          />
+
+          <Route path="/add-super-admin-company/:entrepriseId" element={<Layout><AddSuperAdminCompany /></Layout>} />
+          <Route path="/mycompany" element={<Layout><MyCompany /></Layout>} />
+
           {/* Routes sans Layout (pas de Sidebar ni Topbar) */}
           <Route path="/login" element={<LoginForm />} />
           <Route path="/requestresetpwd" element={<RequestPasswordReset />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/BlogPostOne" element={<BlogPostOne />} />
+
+        
         </Routes>
       </ThemeProvider>
     </ColorModeContext.Provider>

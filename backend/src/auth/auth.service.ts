@@ -197,21 +197,36 @@ export class AuthService {
     }
   }
 
+  // async findOneById(id: string): Promise<User> {
+  //   if (!id) {
+  //     throw new BadRequestException('ID is required');
+  //   }
+
+  //   try {
+  //     console.log('Trying to find user with ID:', id);
+  //     const user = await this.userModel.findById(id).exec();
+  //     if (!user) {
+  //       throw new NotFoundException(`User with ID ${id} not found`);
+  //     }
+  //     console.log('User found:', user); 
+  //     return user;
+  //   } catch (error) {
+  //     console.error('Error finding user:', error); 
+  //     throw new Error(`Error finding user: ${error.message}`);
+  //   }
+  // }
+
   async findOneById(id: string): Promise<User> {
     if (!id) {
       throw new BadRequestException('ID is required');
     }
-
     try {
-      console.log('Trying to find user with ID:', id);
       const user = await this.userModel.findById(id).exec();
       if (!user) {
         throw new NotFoundException(`User with ID ${id} not found`);
       }
-      console.log('User found:', user); 
       return user;
     } catch (error) {
-      console.error('Error finding user:', error); 
       throw new Error(`Error finding user: ${error.message}`);
     }
   }
@@ -316,7 +331,6 @@ async findSuperAdminABshore(): Promise<User[]> {
     }
   }
 
-
   async findUsersByEntreprise(entrepriseId: string): Promise<User[]> {
     try {
       const users = await this.userModel.find({ entreprise: new Types.ObjectId(entrepriseId) }).exec();
@@ -325,5 +339,6 @@ async findSuperAdminABshore(): Promise<User[]> {
       throw new Error(`Erreur lors de la récupération des utilisateurs par entreprise : ${error.message}`);
     }
   }
+
 
 }

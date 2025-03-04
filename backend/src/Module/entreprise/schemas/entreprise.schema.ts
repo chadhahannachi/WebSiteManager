@@ -17,6 +17,9 @@ export class Entreprise extends Document {
 
   @Prop({required: true})
   adresse: string;
+
+  @Prop({required: true})
+  raisonSociale: string;
   
 }
 

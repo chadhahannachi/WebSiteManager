@@ -20,4 +20,7 @@ export class EditProfileDto {
     const errors = await validate(this);
     return errors.map(error => Object.values(error.constraints)).flat();
   }
+
+  @IsString()
+  readonly image?: string; 
 }

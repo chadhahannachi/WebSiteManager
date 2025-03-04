@@ -32,6 +32,9 @@ export class User extends Document {
 
   @Prop()
   role: Role;
+
+  @Prop({ required: false }) // This can be optional
+  image: string;
   
 }
 

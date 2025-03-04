@@ -71,12 +71,12 @@ export class AuthController {
   }
 
   @Get('user/:id')
-  async getUserById(@Param('id') id: string) {
-    if (!id) {
-      throw new BadRequestException('ID is required');
-    }
-    return this.authService.findOneById(id);
+async getUserById(@Param('id') id: string) {
+  if (!id) {
+    throw new BadRequestException('ID is required');
   }
+  return this.authService.findOneById(id);
+}
 
   @Get()
   async getAuthSession(@Session() session: Record<string, any>) {
@@ -190,7 +190,8 @@ export class AuthController {
   }
 
   @Get('/entreprise/:entrepriseId/users')
-  async getUsersByEntreprise(@Param('entrepriseId') entrepriseId: string): Promise<User[]> {
-    return this.authService.findUsersByEntreprise(entrepriseId);
-  }
+async getUsersByEntreprise(@Param('entrepriseId') entrepriseId: string): Promise<User[]> {
+  return this.authService.findUsersByEntreprise(entrepriseId);
+}
+
 }

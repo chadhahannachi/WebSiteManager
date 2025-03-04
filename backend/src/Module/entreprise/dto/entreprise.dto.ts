@@ -7,4 +7,5 @@ export class EntrepriseDto {
       contact: string;
       numTel: string;
       adresse: string;
+      raisonSociale: string;
 } 
