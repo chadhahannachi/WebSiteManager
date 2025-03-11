@@ -241,130 +241,76 @@ const Team = () => {
   // ];
 
   const columns = [
+    {
+      field: "nom",
+      headerName: "Name", 
+      flex: 1, 
+      cellClassName: "name-column--cell", 
+    },
+    {
+      field: "email",
+      headerName: "Email",
+      flex: 1,
+    },
+    {
+      field: "role",
+      headerName: "Role",
+      flex: 1,
 
-
-    {
+      renderCell: ({ row: { role } }) => {
+      let bgColor;
+      let Icon;
     
-    field: "nom",
-    
-    headerName: "Name",
-    
-    flex: 1,
-    
-    cellClassName: "name-column--cell",
-    
-    },
-    
-    {
-    
-    field: "email",
-    
-    headerName: "Email",
-    
-    flex: 1,
-    
-    },
-    
-    {
-    
-    field: "role",
-    
-    headerName: "Role",
-    
-    flex: 1,
-    
-    renderCell: ({ row: { role } }) => {
-    
-    let bgColor;
-    
-    let Icon;
-    
-    
-    
-    switch (role) {
-    
-    case "SuperAdminABshore":
-    
-    bgColor = colors.greenAccent[600];
-    
-    Icon = AdminPanelSettingsOutlinedIcon;
-    
-    break;
-    
-    case "SuperAdminEntreprise":
-    
-    bgColor = colors.greenAccent[700];
-    
-    Icon = SecurityOutlinedIcon;
-    
-    break;
-    
-    case "Moderateur":
-    
-    bgColor = colors.greenAccent[700];
-    
-    Icon = LockOpenOutlinedIcon;
-    
-    break;
-    
-    default:
-    
-    bgColor = colors.greenAccent[500];
-    
-    Icon = null;
-    
-    }
-    
-    
-    
-    return (
-    
-    <Box
-    
-    width="60%"
-    
-    m="0 auto"
-    
-    p="5px"
-    
-    display="flex"
-    
-    justifyContent="center"
-    
-    alignItems="center"
-    
-    backgroundColor={bgColor}
-    
-    borderRadius="4px"
-    
-    >
-    
-    {Icon && <Icon />}
-    
-    <Typography color={colors.grey[100]} sx={{ ml: "5px" }}>
-    
-    {role}
-    
-    </Typography>
-    
-    </Box>
-    
-    );
-    
-    },
-    
-    },
-      {
-        field: "actions",
-        headerName: "Actions",
-        flex: 1,
-        renderCell: ({ row }) => (
-          <Box display="flex" gap="10px">
-            <EditIcon onClick={() => handleOpen(row)} style={{ cursor: "pointer" }} />
-            <DeleteIcon onClick={() => handleDelete(row._id)} style={{ cursor: "pointer" }} />
+        switch (role) {
+          case "SuperAdminABshore":
+            bgColor = colors.greenAccent[600];
+            Icon = AdminPanelSettingsOutlinedIcon;
+          break;
+          case "SuperAdminEntreprise":
+            bgColor = colors.greenAccent[700];
+            Icon = SecurityOutlinedIcon;
+          break;
+          case "Moderateur":
+            bgColor = colors.greenAccent[700];
+            Icon = LockOpenOutlinedIcon;
+          break;
+          default:
+            bgColor = colors.greenAccent[500];
+            Icon = null;
+        }
+        
+        return (
+          <Box
+            width="60%"
+            m="0 auto"
+            p="5px"
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            backgroundColor={bgColor}
+            borderRadius="4px"
+          >
+            {Icon && <Icon />}
+            <Typography color={colors.grey[100]} sx={{ ml: "5px" }}>
+              {role}
+            </Typography>
           </Box>
-        ),
-      },
+        );
+      
+      }, 
+    },
+
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      renderCell: ({ row }) => (
+        <Box display="flex" gap="10px">
+          <EditIcon onClick={() => handleOpen(row)} style={{ cursor: "pointer" }} />
+          <DeleteIcon onClick={() => handleDelete(row._id)} style={{ cursor: "pointer" }} />
+        </Box>
+      ),
+    },
     
     ];
 

@@ -28,7 +28,20 @@ import AddSuperAdminCompany from "./user/AddSadminToCompany";
 import AddMember from "./user/AddSadminToCompany";
 import AddMemberByAdminEnt from "./user/AddMemberByAdminEnt";
 import MyCompany from "./entreprise/MyCompany";
-import BlogPostOne from "./componentTest";
+import PagesManagement from "./BackofficeComponents/PagesManagement";
+import SlidesManagement from "./BackofficeComponents/SlidesManagement";
+import CarrousselsManagement from "./BackofficeComponents/CarrousselsManagement";
+import SolutionsManagement from "./BackofficeComponents/SolutionsManagement";
+import UnitesManagement from "./BackofficeComponents/UnitesManagement";
+import ServicesManagement from "./BackofficeComponents/ServicesManagement";
+import ActualitesManagement from "./BackofficeComponents/ActualitesManagement";
+import ArticlesManagement from "./BackofficeComponents/ArticlesManagement";
+import APropossManagement from "./BackofficeComponents/AProposManagement";
+import EvenementsManagement from "./BackofficeComponents/EvenementsManagement";
+import FAQsManagement from "./BackofficeComponents/FAQManagement";
+import TemoignagesManagement from "./BackofficeComponents/TemoignagesManagement";
+import PartenairesManagement from "./BackofficeComponents/PartenairesManagement";
+import ContenuSpecifiquesManagement from "./BackofficeComponents/ContenuSpecifiqueManagement";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -125,90 +138,41 @@ function App() {
               </Layout>
             }
           />
-          <Route
-            path="/calendar"
-            element={
-              <Layout>
-                <Calendar />
-              </Layout>
-            }
-          />
-          <Route
-            path="/geography"
-            element={
-              <Layout>
-                <Geography />
-              </Layout>
-            }
-          />
-          <Route
-            path="/ListSuperAdminABshore"
-            element={
-              <Layout>
-                <ListAdminABshore />
-              </Layout>
-            }
-          />
-          <Route
-            path="/update-user/:id"
-            element={
-              <Layout>
-                <UpdateUser />
-              </Layout>
-            }
-          />
-          <Route
-            path="/registration"
-            element={
-              <Layout>
-                <SignupForm />
-              </Layout>
-            }
-          />
+          <Route path="/calendar" element={<Layout><Calendar/></Layout>}/>
 
-          <Route
-            path="/AddMemberByAdminEnt"
-            element={
-              <Layout>
-                <AddMemberByAdminEnt />
-              </Layout>
-            }
-          />
+          <Route path="/geography" element={<Layout><Geography /></Layout>}/>
+          <Route path="/ListSuperAdminABshore" element={<Layout><ListAdminABshore /></Layout>}/>
+          <Route path="/update-user/:id" element={<Layout> <UpdateUser /> </Layout>}/>
+          <Route path="/registration" element={<Layout><SignupForm /></Layout> }/>
 
-          <Route
-            path="/ListSuperAdminEnt"
-            element={
-              <Layout>
-                <ListSuperAdminEnt />
-              </Layout>
-            }
-          />
-          <Route
-            path="/ListModerateur"
-            element={
-              <Layout>
-                <ListModerateur />
-              </Layout>
-            }
-          />
+          <Route path="/AddMemberByAdminEnt" element={<Layout><AddMemberByAdminEnt /></Layout>} />
 
-          <Route
-            path="/EntrepriseManager"
-            element={
-              <Layout>
-                <EntrepriseManager />
-              </Layout>
-            }
-          />
+          <Route path="/ListSuperAdminEnt" element={<Layout><ListSuperAdminEnt/></Layout> } />
+          <Route path="/ListModerateur" element={<Layout><ListModerateur/></Layout>} />
 
-          <Route
-            path="/profile"
-            element={
-              <Layout>
-                <Profile />
-              </Layout>
-            }
-          />
+          <Route path="/EntrepriseManager" element={<Layout><EntrepriseManager /></Layout>}/>
+
+          <Route path="/profile" element={ <Layout><Profile /></Layout> }/>
+
+          <Route path="/pagesmanagement" element={<Layout><PagesManagement/></Layout> } />
+
+          <Route path="/slidesmanagement" element={ <Layout><SlidesManagement/></Layout> }/>
+
+          <Route path="/carrousselsmanagement" element={ <Layout><CarrousselsManagement/></Layout> }/>
+
+          <Route path="/solutionsmanagement" element={ <Layout><SolutionsManagement/></Layout> }/>
+
+          <Route path="/unitesmanagement" element={<Layout> <UnitesManagement/></Layout>}/>
+          <Route path="/servicesmanagement" element={<Layout> <ServicesManagement/></Layout>}/>
+          <Route path="/actualitesmanagement" element={<Layout> <ActualitesManagement/></Layout>}/>
+          <Route path="/articlesmanagement" element={<Layout> <ArticlesManagement/></Layout>}/>
+          <Route path="/aProposmanagement" element={<Layout> <APropossManagement/></Layout>}/>
+          <Route path="/evenementmanagement" element={<Layout> <EvenementsManagement/></Layout>}/>
+          <Route path="/faqmanagement" element={<Layout> <FAQsManagement/></Layout>}/>
+          <Route path="/temoignagesmanagement" element={<Layout> <TemoignagesManagement/></Layout>}/>
+          <Route path="/partenairesmanagement" element={<Layout> <PartenairesManagement/></Layout>}/>
+          <Route path="/contenuSpecifiquemanagement" element={<Layout> <ContenuSpecifiquesManagement/></Layout>}/>
+
 
           <Route path="/add-super-admin-company/:entrepriseId" element={<Layout><AddSuperAdminCompany /></Layout>} />
           <Route path="/mycompany" element={<Layout><MyCompany /></Layout>} />
@@ -217,7 +181,6 @@ function App() {
           <Route path="/login" element={<LoginForm />} />
           <Route path="/requestresetpwd" element={<RequestPasswordReset />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
-        <Route path="/BlogPostOne" element={<BlogPostOne />} />
 
         
         </Routes>

@@ -39,6 +39,7 @@ import CardMembershipIcon from '@mui/icons-material/CardMembership';
 import CookieIcon from '@mui/icons-material/Cookie';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import MapsHomeWorkIcon from '@mui/icons-material/MapsHomeWork';
+import InfoIcon from '@mui/icons-material/Info';
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -156,6 +157,14 @@ const Sidebar = () => {
               setSelected={setSelected}
             />
 
+            <Item
+              title="Calendar"
+              to="/calendar"
+              icon={<CalendarTodayOutlinedIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+
             <Typography
               variant="h6"
               color={colors.grey[300]}
@@ -205,15 +214,7 @@ const Sidebar = () => {
               setSelected={setSelected}
             />
 
-            <Typography
-              variant="h6"
-              color={colors.grey[300]}
-              sx={{ m: "15px 0 5px 20px" }}
-            >
-              Pages
-            </Typography>
-
-            {userRole === "superadminabshore" && (
+{userRole === "superadminabshore" && (
               <Item
                 title="Create User Form"
                 to="/registration"
@@ -232,26 +233,30 @@ const Sidebar = () => {
                 setSelected={setSelected}
               />
             )}
+
+            <Typography
+              variant="h6"
+              color={colors.grey[300]}
+              sx={{ m: "15px 0 5px 20px" }}
+            >
+              Pages
+            </Typography>
+
             
             
-            <Item
-              title="Calendar"
-              to="/calendar"
-              icon={<CalendarTodayOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
+            
+            
 
             <Item
               title="Pages"
-              to="/pages"
+              to="/pagesmanagement"
               icon={<NoteAddIcon />}
               selected={selected}
               setSelected={setSelected}
             />
             <Item
               title="Slides"
-              to="/slides"
+              to="/slidesmanagement"
               icon={<VerticalSplitIcon />}
               selected={selected}
               setSelected={setSelected}
@@ -259,7 +264,7 @@ const Sidebar = () => {
 
             <Item
               title="Services"
-              to="/services"
+              to="/servicesmanagement"
               icon={<LocalOfferIcon />}
               selected={selected}
               setSelected={setSelected}
@@ -267,7 +272,7 @@ const Sidebar = () => {
 
             <Item
               title="Solutions"
-              to="/solutions"
+              to="/solutionsmanagement"
               icon={<EmojiObjectsIcon />}
               selected={selected}
               setSelected={setSelected}
@@ -275,7 +280,7 @@ const Sidebar = () => {
             
             <Item
               title="Unités"
-              to="/unites"
+              to="/unitesmanagement"
               icon={<AccountBalanceWalletIcon />}
               selected={selected}
               setSelected={setSelected}
@@ -283,7 +288,7 @@ const Sidebar = () => {
             
             <Item
               title="Actualités"
-              to="/actualites"
+              to="/actualitesmanagement"
               icon={<FiberNewIcon />}
               selected={selected}
               setSelected={setSelected}
@@ -291,7 +296,7 @@ const Sidebar = () => {
             
             <Item
               title="Evenements"
-              to="/evenements"
+              to="/evenementmanagement"
               icon={<EventNoteIcon />}
               selected={selected}
               setSelected={setSelected}
@@ -299,7 +304,7 @@ const Sidebar = () => {
             
             <Item
               title="Articles"
-              to="/articles"
+              to="/articlesmanagement"
               icon={<CategoryIcon />}
               selected={selected}
               setSelected={setSelected}
@@ -307,7 +312,7 @@ const Sidebar = () => {
 
             <Item
               title="Partenariats"
-              to="/partenariats"
+              to="/partenairesmanagement"
               icon={<HandshakeIcon />}
               selected={selected}
               setSelected={setSelected}
@@ -315,7 +320,7 @@ const Sidebar = () => {
             
             <Item
               title="Témoignages"
-              to="/temoignages"
+              to="/temoignagesmanagement"
               icon={<InterpreterModeIcon />}
               selected={selected}
               setSelected={setSelected}
@@ -323,11 +328,20 @@ const Sidebar = () => {
             
             <Item
               title="FAQ Page"
-              to="/faq"
+              to="/faqmanagement"
               icon={<HelpOutlineOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
+
+<Item
+              title="APropos Section"
+              to="/aProposmanagement"
+              icon={<InfoIcon/>}
+              selected={selected}
+              setSelected={setSelected}
+            />
+
 
             <Item
               title="Languages Manager"
@@ -380,7 +394,7 @@ const Sidebar = () => {
 
             <Item
               title="Autres Types de données"
-              to="/differentTypeDonnees"
+              to="/contenuSpecifiquemanagement"
               icon={<AccountTreeIcon />}
               selected={selected}
               setSelected={setSelected}
@@ -388,7 +402,7 @@ const Sidebar = () => {
 
             <Item
               title="Gestion des Carroussels"
-              to="/carroussels"
+              to="/carrousselsmanagement"
               icon={<DynamicFeedIcon />}
               selected={selected}
               setSelected={setSelected}
