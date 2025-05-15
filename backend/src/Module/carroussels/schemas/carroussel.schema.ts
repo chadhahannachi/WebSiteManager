@@ -12,26 +12,36 @@ export class Carroussel extends Document {
   @Prop({ required: true })
   titre: string;
 
-  @Prop({ required: true })
+  @Prop()
   police: string;
 
-  @Prop({ required: true })
+  @Prop()
   code: string;
 
-  @Prop({ required: true })
+  @Prop()
   position: string;
 
-  @Prop({ required: true })
+  @Prop({ type: Object, default: {} })
+  styles: object; // Cela peut contenir des propriétés CSS personnalisées
+
+  @Prop({ type: Object, default: {} })
+  elementStyles: object; // Cela peut contenir des propriétés CSS personnalisées
+
+  @Prop()
   url: string;
 
   @Prop()
   isArchived: boolean;
 
-  @Prop({ type: Types.ObjectId, ref: 'Contenu' })
-  contenu: Contenu;
+  // @Prop({ type: Types.ObjectId, ref: 'Contenu' })
+  // contenu: Contenu;
+
+  // @Prop({ type: [{ type: Types.ObjectId, ref: 'Contenu' }] }) 
+  // contenus: Contenu[]; // Référence un ou plusieurs contenus dynamiques
 
   @Prop({ type: Types.ObjectId, ref: 'Entreprise'})
     entreprise: Entreprise;
+    
 
 }
 

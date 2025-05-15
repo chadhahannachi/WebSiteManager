@@ -8,10 +8,10 @@ export type PageDocument = Page & Document;
 export class Page extends Document {
   
   
-  @Prop({ required: true })
+  @Prop()
   titre: string;
 
-  @Prop({ required: true })
+  @Prop()
   url: string;
  
   @Prop()
@@ -19,6 +19,24 @@ export class Page extends Document {
   
   @Prop({ type: Types.ObjectId, ref: 'Entreprise' })
   entreprise: Entreprise;
+
+  @Prop([
+    {
+      type: {
+        contenuId: { type: Types.ObjectId, required: true }, // référence vers une collection spécifique
+        type: { type: String, required: true }, // 'faq', 'service', 'temoignage', etc.
+        ordre: { type: Number, default: 0 },    // position dans la page
+        style: { type: Object },                // styles personnalisés (optionnel)
+      },
+    },
+  ])
+  sections: {
+    contenuId: Types.ObjectId;
+    type: string;
+    ordre: number;
+    style?: Record<string, any>;
+  }[];
+
   
 }
 

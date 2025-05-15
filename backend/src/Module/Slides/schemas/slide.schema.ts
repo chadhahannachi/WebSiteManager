@@ -7,19 +7,22 @@ export type SlideDocument = Slide & Document;
 @Schema()
 export class Slide extends Document {
   
-  @Prop({ required: true })
+  @Prop()
   titre: string;
 
-  @Prop({ required: true })
-  police: string;
+  @Prop()
+  description: string;
  
-  @Prop({ required: true })
-  code: string;
+  @Prop()
+  image: string;
 
-  @Prop({ required: true })
+  @Prop({ type: Object, default: {} })
+  styles: object; 
+
+  @Prop()
   position: string;
 
-  @Prop({ required: true })
+  @Prop()
   url: string;
 
   @Prop()

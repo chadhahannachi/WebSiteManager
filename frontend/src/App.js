@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import Topbar from "./scenes/global/Topbar";
 import Sidebar from "./scenes/global/Sidebar";
@@ -42,10 +42,46 @@ import FAQsManagement from "./BackofficeComponents/FAQManagement";
 import TemoignagesManagement from "./BackofficeComponents/TemoignagesManagement";
 import PartenairesManagement from "./BackofficeComponents/PartenairesManagement";
 import ContenuSpecifiquesManagement from "./BackofficeComponents/ContenuSpecifiqueManagement";
+import NavbarManagement from "./BackofficeComponents/NavbarManagement";
+import FormulaireComponent from "./FormulaireComponent";
+import LanguagesManagement from "./BackofficeComponents/LanguagesManager";
+import KeywordsManagement from "./BackofficeComponents/ReferencementManager";
+import CookiesManagement from "./BackofficeComponents/CookiesManager";
+
+import { Container, Button } from "@mui/material";
+import ModalComponent from "./components/ModalComponent";
+import SectionRenderer from "./components/SectionRenderer";
+
+import axios from "axios";
+import DynamicRenderer from "./Frontoffice/Carroussels/Carroussels";
+import AddCarroussel from "./Frontoffice/Carroussels/AddCarroussel";
+import Carroussel from "./Frontoffice/Carroussels/Carroussels";
+import ContenuPage from "./Frontoffice/Contenus/contenuPage";
+import ContenuMenu from "./Frontoffice/Contenus/contenumenu";
+import AddContenu from "./Frontoffice/Contenus/addcontenu";
+import ContenuList from "./Frontoffice/Contenus/contenuPage";
+
+import CarrouselDisplay from "./Frontoffice/CarrouselDisplay";
+import AboutUs from "./website/aboutus/AboutUs";
+import OurServices from "./website/services/OurServices";
+import OurPartners from "./website/partners/OurPartners";
+import LatestEvents from "./website/events/LatestEvents";
+import ContactUs from "./website/contactus/ContactUs";
+import News from "./website/news/News";
+import Testimonials from "./website/testimonials/Testimonials";
+import Slider from "./website/slider/Slider";
+import HomePage from "./website/HomePage";
+import WorkspaceLayout from "./website/WorkspaceLayout";
+import WebsiteEditor from "./website/WebsiteEditor";
+import Editor from "./website/WebsiteEditor";
+import TextEditor from "./website/TextEditorBlock";
+
 
 function App() {
   const [theme, colorMode] = useMode();
   const [isSidebar, setIsSidebar] = useState(true);
+
+  const [sections, setSections] = useState([]);
 
   // Layout pour les routes avec Sidebar et Topbar
   const Layout = ({ children }) => {
@@ -172,6 +208,11 @@ function App() {
           <Route path="/temoignagesmanagement" element={<Layout> <TemoignagesManagement/></Layout>}/>
           <Route path="/partenairesmanagement" element={<Layout> <PartenairesManagement/></Layout>}/>
           <Route path="/contenuSpecifiquemanagement" element={<Layout> <ContenuSpecifiquesManagement/></Layout>}/>
+          <Route path="/navbarmanagement" element={<Layout> <NavbarManagement/></Layout>}/>
+          <Route path="/formulaire" element={<Layout> <FormulaireComponent/></Layout>}/>
+          <Route path="/languages" element={<Layout> <LanguagesManagement/></Layout>}/>
+          <Route path="/keywordsreferencement" element={<Layout> <KeywordsManagement/></Layout>}/>
+          <Route path="/cookiesmanagement" element={<Layout> <CookiesManagement/></Layout>}/>
 
 
           <Route path="/add-super-admin-company/:entrepriseId" element={<Layout><AddSuperAdminCompany /></Layout>} />
@@ -180,13 +221,43 @@ function App() {
           {/* Routes sans Layout (pas de Sidebar ni Topbar) */}
           <Route path="/login" element={<LoginForm />} />
           <Route path="/requestresetpwd" element={<RequestPasswordReset />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+
+          <Route path="/frontoffice" element={<SectionRenderer sections={sections}/>} />
+
+          <Route path="/carroussels" element={<Carroussel sections={sections}/>} />
+          <Route path="/addcarroussel" element={<AddCarroussel/>} />
+          {/* <Route path="/contenu" element={<ContenuPage/>} /> */}
+          <Route path="/contenumenu" element={<ContenuMenu/>} />
+          <Route path="/contenus/:type" element={<ContenuList />} />
+          <Route path="add" element={<AddContenu />} />
+
+
+        <Route path="/carrousseldisplay" element={<CarrouselDisplay />} />
+
+        
+        <Route path="/homepage" element={<HomePage />} />
+        <Route path="/workspacelayout" element={<WorkspaceLayout />} />
+        <Route path="/Editor" element={<Editor />} />
 
         
         </Routes>
       </ThemeProvider>
     </ColorModeContext.Provider>
   );
+
+
+
+  // const [sections, setSections] = useState([]);
+
+  // return (
+  //   <Container>
+  //     <SectionRenderer sections={sections}/>
+  //   </Container>
+  // );
+
+
 }
 
 export default App;

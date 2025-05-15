@@ -69,4 +69,28 @@ export class ContenuController {
   remove(@Param('type') type: string, @Param('id') id: string) {
     return this.contenuService.remove(id, type);
   }
+
+
+  // @Get(':type/entreprise/:entrepriseId')
+  // async getContenuByEntreprise(@Param('type') type: string, @Param('entrepriseId') entrepriseId: string): Promise<any[]> {
+  //   return this.contenuService.findContenuByEntreprise(type, entrepriseId);
+  // }
+
+  @Get(':type/entreprise/:entrepriseId')
+  async getContenuByEntreprise(
+    @Param('type') type: string,
+    @Param('entrepriseId') entrepriseId: string,
+  ): Promise<any[]> {
+    return this.contenuService.findContenuByEntreprise(type, entrepriseId);
+  }
+
+
+
+
+  @Patch('FAQ/:id/styles')
+  updateFaqStyles(@Param('id') id: string, @Body() styles: Record<string, any>) {
+    return this.contenuService.updateFaqStyles(id, styles);
+  }
+
+  
 }

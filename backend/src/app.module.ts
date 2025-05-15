@@ -11,6 +11,15 @@ import { RedirectionModule } from './Module/Redirections/redirections.module';
 import { SlideModule } from './Module/Slides/slides.module';
 import { ContenuModule } from './Module/contenus/contenus.module';
 import { CarrousselModule } from './Module/carroussels/carroussels.module';
+import { NavbarModule } from './Module/navbars/navbars.module';
+import { MenuModule } from './Module/menus/menus.module';
+import { FormulaireModule } from './Module/forms/forms.module';
+import { LanguageModule } from './Module/language/language.module';
+import { KeywordModule } from './Module/referencementSEO/keywords.module';
+import { CookieModule } from './Module/cookies/cookies.module';
+import { LayoutModule } from './Module/layouts/layout.module';
+import { WebsiteModule } from './Website/websites.module';
+import { PreferenceModule } from './Module/preferences/preferences.module';
 
 @Module({
   imports: [
@@ -26,7 +35,16 @@ import { CarrousselModule } from './Module/carroussels/carroussels.module';
     RedirectionModule,
     SlideModule,
     ContenuModule,
-    CarrousselModule
+    CarrousselModule,
+    NavbarModule,
+    MenuModule,
+    FormulaireModule,
+    LanguageModule,
+    KeywordModule,
+    CookieModule,
+    LayoutModule,
+    WebsiteModule,
+    PreferenceModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -38,4 +38,6 @@ export class SlideController {
         return this.slideService.findSlideByEntreprise(entrepriseId);
     }
 
+
+      
 }

@@ -29,10 +29,19 @@ export class Contenu extends Document {
   @Prop()
   image: string;
 
-  @Prop({ required: true })
+  @Prop()
+  code: string;
+
+  // @Prop({ type: Object, default: {} })
+  // styles: object; 
+
+  @Prop({ type: Object, default: {} })
+  styles: Record<string, any>;
+
+  @Prop()
   datePublication: Date;
 
-  @Prop({ required: true })
+  @Prop()
   isPublished: boolean;
 
   @Prop()
@@ -78,9 +87,9 @@ export class ContenuSpecifique extends Contenu {
 export const ContenuSpecifiqueSchema = SchemaFactory.createForClass(ContenuSpecifique);
 
 // Partenaire
-@Schema()
+@Schema({ collection: 'partenaires' })
 export class Partenaire extends Contenu {
-  @Prop({ required: true })
+  @Prop()
   secteurActivite: string;
 }
 export const PartenaireSchema = SchemaFactory.createForClass(Partenaire);

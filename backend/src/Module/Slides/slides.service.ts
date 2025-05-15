@@ -43,12 +43,24 @@ export class SlideService {
   }
   
       
-  async findSlideByEntreprise(entrepriseId: string): Promise<Slide[]> {
-        try {
-          const slides = await this.slideModel.find({ entreprise: new Types.ObjectId(entrepriseId) }).exec();
-          return slides;
-        } catch (error) {
-          throw new Error(`Erreur lors de la récupération des utilisateurs par entreprise : ${error.message}`);
+  // async findSlideByEntreprise(entrepriseId: string): Promise<Slide[]> {
+  //       try {
+  //         const slides = await this.slideModel.find({ entreprise: new Types.ObjectId(entrepriseId) }).exec();
+  //         return slides;
+  //       } catch (error) {
+  //         throw new Error(`Erreur lors de la récupération des utilisateurs par entreprise : ${error.message}`);
+  //       }
+  //     }
+
+
+  
+      async findSlideByEntreprise(entrepriseId: string): Promise<Slide[]> {
+          try {
+            // const preference = await this.preferenceModel.findOne({ entreprise: new Types.ObjectId(entrepriseId) }).exec();
+            const slides = await this.slideModel.find({ entreprise: entrepriseId }).exec();
+            return slides; // Retourne null si aucune préférence n'est trouvée
+          } catch (error) {
+            throw new Error(`Erreur lors de la récupération des préférences par entreprise : ${error.message}`);
+          }
         }
-      }
 }

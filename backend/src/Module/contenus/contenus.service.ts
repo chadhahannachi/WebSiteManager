@@ -47,7 +47,7 @@
 // }
 
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Contenu, ContenuDocument, Unite, UniteDocument } from './schemas/contenu.schema';
@@ -276,4 +276,128 @@ export class ContenuService {
     }
     return deletedContenu;
   }
+
+
+
+    // async findContenuByEntreprise(entrepriseId: string, type: string): Promise<any[]> {
+    //   switch (type) {
+    //     case 'ContenuSpecifique':
+    //       return this.contenuSpecifiqueModel.find({ entreprise: new Types.ObjectId(entrepriseId) }).exec();
+    //     case 'Partenaire':
+    //       return this.partenaireModel.find({ entreprise: new Types.ObjectId(entrepriseId) }).exec();
+    //     case 'Temoignage':
+    //       return this.temoignageModel.find({ entreprise: new Types.ObjectId(entrepriseId) }).exec();
+    //     case 'FAQ':
+    //       return this.faqModel.find({ entreprise: new Types.ObjectId(entrepriseId) }).exec();
+    //     case 'Evenement':
+    //       return this.evenementModel.find({ entreprise: new Types.ObjectId(entrepriseId) }).exec(); 
+    //     case 'APropos':
+    //       return this.aProposModel.find({ entreprise: new Types.ObjectId(entrepriseId) }).exec();      
+    //     case 'Article':
+    //       return this.articleModel.find({ entreprise: new Types.ObjectId(entrepriseId) }).exec();        
+    //     case 'Actualite':
+    //       return this.actualiteModel.find({ entreprise: new Types.ObjectId(entrepriseId) }).exec();      
+    //     case 'Service':
+    //       return this.serviceModel.find({ entreprise: new Types.ObjectId(entrepriseId) }).exec();     
+    //     case 'Solution':
+    //       return this.solutionModel.find({ entreprise: new Types.ObjectId(entrepriseId) }).exec();
+    //     case 'Unite':
+    //       return this.uniteModel.find({ entreprise: new Types.ObjectId(entrepriseId) }).exec();
+          
+    //     default:
+    //       return this.contenuModel.find({ entreprise: new Types.ObjectId(entrepriseId) }).exec();
+    //   }
+    // }
+
+
+    async findContenuByEntreprise(type: string, entrepriseId: string): Promise<any[]> {
+      try {
+        // Pas de conversion en ObjectId car le champ entreprise est stocké comme une chaîne
+        console.log(`Fetching ${type} for entrepriseId: ${entrepriseId}`);
+  
+        let result;
+        switch (type) {
+          case 'ContenuSpecifique':
+            result = await this.contenuSpecifiqueModel
+              .find({ entreprise: entrepriseId, isPublished: true })
+              .exec();
+            break;
+          case 'Partenaire':
+            result = await this.partenaireModel
+              .find({ entreprise: entrepriseId, isPublished: true })
+              .exec();
+            break;
+          case 'Temoignage':
+            result = await this.temoignageModel
+              .find({ entreprise: entrepriseId, isPublished: true })
+              .exec();
+            break;
+          case 'FAQ':
+            result = await this.faqModel
+              .find({ entreprise: entrepriseId, isPublished: true })
+              .exec();
+            break;
+          case 'Evenement':
+            result = await this.evenementModel
+              .find({ entreprise: entrepriseId, isPublished: true })
+              .exec();
+            break;
+          case 'APropos':
+            result = await this.aProposModel
+              .find({ entreprise: entrepriseId, isPublished: true })
+              .exec();
+            break;
+          case 'Article':
+            result = await this.articleModel
+              .find({ entreprise: entrepriseId, isPublished: true })
+              .exec();
+            break;
+          case 'Actualite':
+            result = await this.actualiteModel
+              .find({ entreprise: entrepriseId, isPublished: true })
+              .exec();
+            break;
+          case 'Service':
+            result = await this.serviceModel
+              .find({ entreprise: entrepriseId, isPublished: true })
+              .exec();
+            break;
+          case 'Solution':
+            result = await this.solutionModel
+              .find({ entreprise: entrepriseId, isPublished: true })
+              .exec();
+            break;
+          case 'Unite':
+            result = await this.uniteModel
+              .find({ entreprise: entrepriseId, isPublished: true })
+              .exec();
+            break;
+          default:
+            result = await this.contenuModel
+              .find({ entreprise: entrepriseId, isPublished: true })
+              .exec();
+        }
+  
+        console.log(`Found ${result.length} ${type}(s) for entrepriseId: ${entrepriseId}`);
+        return result;             
+      } catch (error) {
+        console.error(`Error in findContenuByEntreprise for type ${type}:`, error);
+        throw new BadRequestException(`Error fetching contenu for entrepriseId ${entrepriseId}: ${error.message}`);
+      }
+    }
+
+
+
+    async updateFaqStyles(id: string, styles: Record<string, any>): Promise<FAQ> {
+      const updatedFaq = await this.faqModel.findByIdAndUpdate(
+        id,
+        { $set: { styles } },
+        { new: true }
+      ).exec();
+  
+      if (!updatedFaq) {
+        throw new NotFoundException(`FAQ with ID ${id} not found`);
+      }
+      return updatedFaq;
+    }
 }

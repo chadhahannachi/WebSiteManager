@@ -14,6 +14,11 @@ export class CarrousselController {
     return this.carrousselService.create(createCarrousselDto);
   }
 
+  @Post()
+    async createCarroussel(@Body() createCarrousselDto: CreateCarrousselDto) {
+        return this.carrousselService.createCarroussel(createCarrousselDto);
+    }
+
   @Get()
   findAll() {
     return this.carrousselService.findAll();
@@ -41,12 +46,12 @@ export class CarrousselController {
     }
   
 
-    @Post(':id/contenu')
-  async ajouterContenuAuCarroussel(
-    @Param('carrousselId') carrousselId: string, @Body('contenuId') contenuId: string ) {
-    await this.carrousselService.addContenuToCarroussel(carrousselId, contenuId);
-    return { message: 'Contenu ajouté au carrousel avec succès' };
-  }
+  //   @Post(':id/contenu')
+  // async ajouterContenuAuCarroussel(
+  //   @Param('carrousselId') carrousselId: string, @Body('contenuId') contenuId: string ) {
+  //   await this.carrousselService.addContenuToCarroussel(carrousselId, contenuId);
+  //   return { message: 'Contenu ajouté au carrousel avec succès' };
+  // }
 
   
 }

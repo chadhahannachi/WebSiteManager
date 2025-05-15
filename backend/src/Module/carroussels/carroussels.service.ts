@@ -4,10 +4,13 @@ import { Model, Types } from 'mongoose';
 import { CreateCarrousselDto } from './dto/create-carroussel.dto';
 import { UpdateCarrousselDto } from './dto/update-carroussel.dto';
 import { Carroussel, CarrousselDocument } from './schemas/carroussel.schema';
+import { Contenu, ContenuDocument } from '../contenus/schemas/contenu.schema';
 
 @Injectable()
 export class CarrousselService {
-  constructor(@InjectModel(Carroussel.name) private carrousselModel: Model<CarrousselDocument>) {}
+  constructor(@InjectModel(Carroussel.name) private carrousselModel: Model<CarrousselDocument>,
+  @InjectModel(Contenu.name) private contenuModel: Model<ContenuDocument>,
+) {}
 
   async create(createCarrousselDto: CreateCarrousselDto): Promise<Carroussel> {
     const carroussel = new this.carrousselModel(createCarrousselDto);
@@ -57,5 +60,23 @@ export class CarrousselService {
           { $push: { contenu: contenuId } }
         );
       }
+
       
+      
+      async createCarroussel(createCarrousselDto: CreateCarrousselDto): Promise<Carroussel> {
+        const { titre, styles, contenus } = createCarrousselDto;
+
+        // Créer les contenus et récupérer leurs IDs
+        const createdContenus = await this.contenuModel.insertMany(contenus);
+        const contenuIds = createdContenus.map((c) => c._id);
+
+        // Créer le carrousel avec les contenus associés
+        const newCarroussel = new this.carrousselModel({
+            titre,
+            styles,
+            contenus: contenuIds,
+        });
+
+        return newCarroussel.save();
+    }
 }

@@ -345,7 +345,7 @@ const Sidebar = () => {
 
             <Item
               title="Languages Manager"
-              to="/langues"
+              to="/languages"
               icon={<TranslateIcon />}
               selected={selected}
               setSelected={setSelected}
@@ -386,7 +386,7 @@ const Sidebar = () => {
             
             <Item
               title="Cookies Manager"
-              to="/cookiesmanager"
+              to="/cookiesmanagement"
               icon={<CookieIcon />}
               selected={selected}
               setSelected={setSelected}
