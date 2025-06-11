@@ -262,9 +262,9 @@ export default function OurSolutions({ styleIndex }) {
 
   return (
     <section className="solutions-section">
-      <div>
+      {/* <div>
         <h1>OUR SOLUTIONS</h1>
-      </div>
+      </div> */}
       <h2 >
          Customizable Solutions that are Easy to Adapt.
       </h2>

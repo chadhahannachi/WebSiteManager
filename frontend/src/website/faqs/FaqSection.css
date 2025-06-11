@@ -99,15 +99,15 @@
 .style-two .faq-card:hover {
   transform: translateY(-4px);
 }
-.style-two h4 {
+/* .style-two h4 {
   font-size: 18px;
   margin-bottom: 10px;
   color: #1a202c;
-}
-.style-two p {
+} */
+/* .style-two p {
   color: #4a5568;
   line-height: 1.6;
-}
+} */
 
 /* --------- Header & Menu --------- */
 .faq-header {

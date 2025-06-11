@@ -13,7 +13,9 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin: 'http://localhost:3000', 
+    // origin: 'http://localhost:3000', 
+    origin: ['http://localhost:3000', 'http://127.0.0.1:8000'], // Allow both frontend and Laravel backend
+    // origin: true, // Allow all origins during development
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

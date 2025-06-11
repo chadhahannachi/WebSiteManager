@@ -585,6 +585,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowsUpDownLeftRight, faTimes, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
+
+const API_URL = 'http://localhost:5000/couleurs';
 
 export default function EditorFaqGrid({ faqs, initialPosition = { top: 0, left: 0 }, initialStyles = { width: 600, minHeight: 400 }, onSelect, onPositionChange, onStyleChange }) {
   const [position, setPosition] = useState({
@@ -605,6 +609,11 @@ export default function EditorFaqGrid({ faqs, initialPosition = { top: 0, left: 
   const offset = useRef({ x: 0, y: 0 });
   const inputRef = useRef(null);
   const pendingStyles = useRef({}); // Stocke les styles en attente par FAQ
+
+  const [colors, setColors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [userEntreprise, setUserEntreprise] = useState(null);
 
   // Valider les FAQs au montage et initialiser les styles
 //   useEffect(() => {
@@ -937,6 +946,62 @@ const handleStyleChange = (property, value, subProperty, faqIndex) => {
     ));
   };
 
+
+  // Fetch user enterprise
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken?.sub;
+        if (userId) {
+          axios
+            .get(`http://localhost:5000/auth/user/${userId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+            .then((response) => {
+              setUserEntreprise(response.data.entreprise);
+              setLoading(false);
+            })
+            .catch((err) => {
+              console.error('Error fetching user data:', err);
+              setError('Erreur lors de la récupération des données utilisateur.');
+              setLoading(false);
+            });
+        } else {
+          setError('ID utilisateur manquant.');
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('Error decoding token:', err);
+        setError('Erreur lors du décodage du token.');
+        setLoading(false);
+      }
+    } else {
+      console.error('Token is missing from localStorage.');
+      setError('Token manquant. Veuillez vous connecter.');
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch company colors
+  useEffect(() => {
+    if (userEntreprise) {
+      axios
+        .get(`${API_URL}/entreprise/${userEntreprise}/couleurs`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        })
+        .then((res) => {
+          setColors(res.data);
+        })
+        .catch((err) => {
+          console.error('Erreur lors de la récupération des couleurs:', err);
+          setError('Erreur lors de la récupération des couleurs.');
+        });
+    }
+  }, [userEntreprise]);
+
+
   return (
     <div
       onClick={() => setIsSelected(false)}
@@ -982,6 +1047,40 @@ const handleStyleChange = (property, value, subProperty, faqIndex) => {
                 <h4>FAQ {index + 1}: {faq.question}</h4>
                 <div>
                   <label>Card Background Color: </label>
+                  {loading ? (
+                <span>Chargement des couleurs...</span>
+              ) : error ? (
+                <span style={{ color: 'red' }}>{error}</span>
+              ) : colors.length === 0 ? (
+                <span>Aucune couleur disponible.</span>
+              ) : (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    marginLeft: '10px',
+                    marginTop: '5px',
+                  }}
+                >
+                  {colors.map((c) => (
+                    <div
+                      key={c._id}
+                      onClick={() => handleStyleChange('backgroundColor', c.couleur, 'card', index )}
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: c.couleur,
+                        border: faq.styles.card.backgroundColor === c.couleur ? '2px solid #000' : '1px solid #ccc',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'border 0.2s ease',
+                      }}
+                      title={c.couleur}
+                    />
+                  ))}
+                </div>
+              )}
                   <input
                     type="color"
                     value={faq.styles.card.backgroundColor || '#ffffff'}
@@ -1000,6 +1099,40 @@ const handleStyleChange = (property, value, subProperty, faqIndex) => {
                 <h5>Question Text Style</h5>
                 <div>
                   <label>Color: </label>
+                  {loading ? (
+                <span>Chargement des couleurs...</span>
+              ) : error ? (
+                <span style={{ color: 'red' }}>{error}</span>
+              ) : colors.length === 0 ? (
+                <span>Aucune couleur disponible.</span>
+              ) : (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    marginLeft: '10px',
+                    marginTop: '5px',
+                  }}
+                >
+                  {colors.map((c) => (
+                    <div
+                      key={c._id}
+                      onClick={() => handleStyleChange('color', c.couleur, 'question', index)}
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: c.couleur,
+                        border: faq.styles.question.color === c.couleur ? '2px solid #000' : '1px solid #ccc',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'border 0.2s ease',
+                      }}
+                      title={c.couleur}
+                    />
+                  ))}
+                </div>
+              )}
                   <input
                     type="color"
                     value={faq.styles.question.color || '#333333'}
@@ -1077,6 +1210,40 @@ const handleStyleChange = (property, value, subProperty, faqIndex) => {
                 <h5>Answer Text Style</h5>
                 <div>
                   <label>Color: </label>
+                  {loading ? (
+                <span>Chargement des couleurs...</span>
+              ) : error ? (
+                <span style={{ color: 'red' }}>{error}</span>
+              ) : colors.length === 0 ? (
+                <span>Aucune couleur disponible.</span>
+              ) : (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    marginLeft: '10px',
+                    marginTop: '5px',
+                  }}
+                >
+                  {colors.map((c) => (
+                    <div
+                      key={c._id}
+                      onClick={() => handleStyleChange('color', c.couleur, 'answer', index)}
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: c.couleur,
+                        border: faq.styles.answer.color === c.couleur ? '2px solid #000' : '1px solid #ccc',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'border 0.2s ease',
+                      }}
+                      title={c.couleur}
+                    />
+                  ))}
+                </div>
+              )}
                   <input
                     type="color"
                     value={faq.styles.answer.color || '#666666'}
@@ -1285,7 +1452,7 @@ const handleStyleChange = (property, value, subProperty, faqIndex) => {
       </div> */}
 
 
-<div
+      <div
         className="faq-grid style-two"
         style={{
           position: 'absolute',

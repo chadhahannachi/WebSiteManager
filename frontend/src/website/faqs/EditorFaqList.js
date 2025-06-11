@@ -429,6 +429,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowsUpDownLeftRight, faTimes, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
+
+const API_URL = 'http://localhost:5000/couleurs';
 
 export default function EditorFaqList({
   faqs: initialFaqs,
@@ -469,6 +473,12 @@ export default function EditorFaqList({
   const [editField, setEditField] = useState(null);
   const offset = useRef({ x: 0, y: 0 });
   const containerRef = useRef(null);
+
+  const [colors, setColors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [userEntreprise, setUserEntreprise] = useState(null);
+
 
   useEffect(() => {
     // Initialize FAQ styles
@@ -593,32 +603,60 @@ export default function EditorFaqList({
     setEditField(null);
   };
 
+  // const handleStyleChange = (property, value, type) => {
+  //   setStyles((prev) => {
+  //     const newStyles = {
+  //       ...prev,
+  //       [type]: {
+  //         ...prev[type],
+  //         [property]: value,
+  //       },
+  //     };
+  //     // Update faqs with new styles and notify parent
+  //     const updatedFaqs = faqs.map((faq) => ({
+  //       ...faq,
+  //       styles: {
+  //         button: newStyles.button,
+  //         answer: newStyles.answer,
+  //       },
+  //     }));
+  //     setFaqs(updatedFaqs);
+  //     updatedFaqs.forEach((faq) => {
+  //       if (faq._id && onStyleChange) {
+  //         onStyleChange(faq._id, faq.styles);
+  //       }
+  //     });
+  //     return newStyles;
+  //   });
+  // };
+
+
+
   const handleStyleChange = (property, value, type) => {
-    setStyles((prev) => {
-      const newStyles = {
-        ...prev,
-        [type]: {
-          ...prev[type],
-          [property]: value,
-        },
-      };
-      // Update faqs with new styles and notify parent
-      const updatedFaqs = faqs.map((faq) => ({
-        ...faq,
-        styles: {
-          button: newStyles.button,
-          answer: newStyles.answer,
-        },
-      }));
-      setFaqs(updatedFaqs);
-      updatedFaqs.forEach((faq) => {
-        if (faq._id && onStyleChange) {
-          onStyleChange(faq._id, faq.styles);
-        }
-      });
-      return newStyles;
+  setStyles((prev) => {
+    const newStyles = {
+      ...prev,
+      [type]: {
+        ...prev[type],
+        [property]: value,
+      },
+    };
+    const updatedFaqs = faqs.map((faq) => ({
+      ...faq,
+      styles: {
+        button: newStyles.button,
+        answer: newStyles.answer,
+      },
+    }));
+    setFaqs(updatedFaqs);
+    updatedFaqs.forEach((faq) => {
+      if (faq._id && onStyleChange) {
+        onStyleChange(faq._id, faq.styles);
+      }
     });
-  };
+    return newStyles;
+  });
+};
 
   const renderControlButtons = () => {
     if (!isSelected) return null;
@@ -685,6 +723,62 @@ export default function EditorFaqList({
     ));
   };
 
+
+  // Fetch user enterprise
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken?.sub;
+        if (userId) {
+          axios
+            .get(`http://localhost:5000/auth/user/${userId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+            .then((response) => {
+              setUserEntreprise(response.data.entreprise);
+              setLoading(false);
+            })
+            .catch((err) => {
+              console.error('Error fetching user data:', err);
+              setError('Erreur lors de la récupération des données utilisateur.');
+              setLoading(false);
+            });
+        } else {
+          setError('ID utilisateur manquant.');
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('Error decoding token:', err);
+        setError('Erreur lors du décodage du token.');
+        setLoading(false);
+      }
+    } else {
+      console.error('Token is missing from localStorage.');
+      setError('Token manquant. Veuillez vous connecter.');
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch company colors
+  useEffect(() => {
+    if (userEntreprise) {
+      axios
+        .get(`${API_URL}/entreprise/${userEntreprise}/couleurs`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        })
+        .then((res) => {
+          setColors(res.data);
+        })
+        .catch((err) => {
+          console.error('Erreur lors de la récupération des couleurs:', err);
+          setError('Erreur lors de la récupération des couleurs.');
+        });
+    }
+  }, [userEntreprise]);
+
+
   return (
     <div
       onClick={() => setIsSelected(false)}
@@ -729,6 +823,40 @@ export default function EditorFaqList({
             <h4>Question Button</h4>
             <div>
               <label>Text Color: </label>
+              {loading ? (
+                <span>Chargement des couleurs...</span>
+              ) : error ? (
+                <span style={{ color: 'red' }}>{error}</span>
+              ) : colors.length === 0 ? (
+                <span>Aucune couleur disponible.</span>
+              ) : (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    marginLeft: '10px',
+                    marginTop: '5px',
+                  }}
+                >
+                  {colors.map((c) => (
+                    <div
+                      key={c._id}
+                      onClick={() => handleStyleChange('color', c.couleur, 'button')}
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: c.couleur,
+                        border: styles.button.color === c.couleur ? '2px solid #000' : '1px solid #ccc',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'border 0.2s ease',
+                      }}
+                      title={c.couleur}
+                    />
+                  ))}
+                </div>
+              )}
               <input
                 type="color"
                 value={styles.button.color}
@@ -737,6 +865,40 @@ export default function EditorFaqList({
             </div>
             <div>
               <label>Background Color: </label>
+              {loading ? (
+                <span>Chargement des couleurs...</span>
+              ) : error ? (
+                <span style={{ color: 'red' }}>{error}</span>
+              ) : colors.length === 0 ? (
+                <span>Aucune couleur disponible.</span>
+              ) : (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    marginLeft: '10px',
+                    marginTop: '5px',
+                  }}
+                >
+                  {colors.map((c) => (
+                    <div
+                      key={c._id}
+                      onClick={() => handleStyleChange('backgroundColor', c.couleur, 'button')}
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: c.couleur,
+                        border: styles.button.backgroundColor === c.couleur ? '2px solid #000' : '1px solid #ccc',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'border 0.2s ease',
+                      }}
+                      title={c.couleur}
+                    />
+                  ))}
+                </div>
+              )}
               <input
                 type="color"
                 value={styles.button.backgroundColor}
@@ -745,6 +907,40 @@ export default function EditorFaqList({
             </div>
             <div>
               <label>Hover Color: </label>
+              {loading ? (
+                <span>Chargement des couleurs...</span>
+              ) : error ? (
+                <span style={{ color: 'red' }}>{error}</span>
+              ) : colors.length === 0 ? (
+                <span>Aucune couleur disponible.</span>
+              ) : (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    marginLeft: '10px',
+                    marginTop: '5px',
+                  }}
+                >
+                  {colors.map((c) => (
+                    <div
+                      key={c._id}
+                      onClick={() => handleStyleChange('hoverColor', c.couleur, 'button')}
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: c.couleur,
+                        border: styles.button.hoverColor === c.couleur ? '2px solid #000' : '1px solid #ccc',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'border 0.2s ease',
+                      }}
+                      title={c.couleur}
+                    />
+                  ))}
+                </div>
+              )}
               <input
                 type="color"
                 value={styles.button.hoverColor}
@@ -777,6 +973,40 @@ export default function EditorFaqList({
             <h4>Answer Section</h4>
             <div>
               <label>Background Color: </label>
+              {loading ? (
+                <span>Chargement des couleurs...</span>
+              ) : error ? (
+                <span style={{ color: 'red' }}>{error}</span>
+              ) : colors.length === 0 ? (
+                <span>Aucune couleur disponible.</span>
+              ) : (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    marginLeft: '10px',
+                    marginTop: '5px',
+                  }}
+                >
+                  {colors.map((c) => (
+                    <div
+                      key={c._id}
+                      onClick={() => handleStyleChange('backgroundColor', c.couleur, 'answer')}
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: c.couleur,
+                        border: styles.answer.backgroundColor === c.couleur ? '2px solid #000' : '1px solid #ccc',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'border 0.2s ease',
+                      }}
+                      title={c.couleur}
+                    />
+                  ))}
+                </div>
+              )}
               <input
                 type="color"
                 value={styles.answer.backgroundColor}
@@ -785,6 +1015,40 @@ export default function EditorFaqList({
             </div>
             <div>
               <label>Text Color: </label>
+              {loading ? (
+                <span>Chargement des couleurs...</span>
+              ) : error ? (
+                <span style={{ color: 'red' }}>{error}</span>
+              ) : colors.length === 0 ? (
+                <span>Aucune couleur disponible.</span>
+              ) : (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    marginLeft: '10px',
+                    marginTop: '5px',
+                  }}
+                >
+                  {colors.map((c) => (
+                    <div
+                      key={c._id}
+                      onClick={() => handleStyleChange('color', c.couleur, 'answer')}
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: c.couleur,
+                        border: styles.answer.color === c.couleur ? '2px solid #000' : '1px solid #ccc',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'border 0.2s ease',
+                      }}
+                      title={c.couleur}
+                    />
+                  ))}
+                </div>
+              )}
               <input
                 type="color"
                 value={styles.answer.color}

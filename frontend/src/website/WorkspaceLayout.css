@@ -366,6 +366,7 @@
   text-align: right;
 }
 
+
 .property-row input:focus {
   outline: none;
   border-color: #3498db;

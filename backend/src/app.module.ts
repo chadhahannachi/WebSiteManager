@@ -20,6 +20,8 @@ import { CookieModule } from './Module/cookies/cookies.module';
 import { LayoutModule } from './Module/layouts/layout.module';
 import { WebsiteModule } from './Website/websites.module';
 import { PreferenceModule } from './Module/preferences/preferences.module';
+import { CouleurModule } from './Module/couleurs/couleurs.module';
+import { LicenseModule } from './Module/License/license.module';
 
 @Module({
   imports: [
@@ -44,7 +46,9 @@ import { PreferenceModule } from './Module/preferences/preferences.module';
     CookieModule,
     LayoutModule,
     WebsiteModule,
-    PreferenceModule
+    PreferenceModule,
+    CouleurModule,
+    LicenseModule
   ],
   controllers: [AppController],
   providers: [AppService],

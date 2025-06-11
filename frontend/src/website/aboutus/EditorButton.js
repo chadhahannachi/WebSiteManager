@@ -1,6 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowsUpDownLeftRight, faTimes, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
+
+const API_URL = 'http://localhost:5000/couleurs';
 
 export default function EditorButton({ initialPosition, initialStyles, children, onSelect }) {
   const [position, setPosition] = useState(initialPosition);
@@ -9,6 +13,11 @@ export default function EditorButton({ initialPosition, initialStyles, children,
   const [isEditing, setIsEditing] = useState(false);
   const [isSelected, setIsSelected] = useState(false);
   const offset = useRef({ x: 0, y: 0 });
+
+  const [colors, setColors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [userEntreprise, setUserEntreprise] = useState(null);
 
   useEffect(() => {
     // Ajouter les écouteurs globaux lorsqu'on commence à draguer
@@ -98,6 +107,61 @@ export default function EditorButton({ initialPosition, initialStyles, children,
     );
   };
 
+   // Fetch user enterprise
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken?.sub;
+        if (userId) {
+          axios
+            .get(`http://localhost:5000/auth/user/${userId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+            .then((response) => {
+              setUserEntreprise(response.data.entreprise);
+              setLoading(false);
+            })
+            .catch((err) => {
+              console.error('Error fetching user data:', err);
+              setError('Erreur lors de la récupération des données utilisateur.');
+              setLoading(false);
+            });
+        } else {
+          setError('ID utilisateur manquant.');
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('Error decoding token:', err);
+        setError('Erreur lors du décodage du token.');
+        setLoading(false);
+      }
+    } else {
+      console.error('Token is missing from localStorage.');
+      setError('Token manquant. Veuillez vous connecter.');
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch company colors
+  useEffect(() => {
+    if (userEntreprise) {
+      axios
+        .get(`${API_URL}/entreprise/${userEntreprise}/couleurs`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        })
+        .then((res) => {
+          setColors(res.data);
+        })
+        .catch((err) => {
+          console.error('Erreur lors de la récupération des couleurs:', err);
+          setError('Erreur lors de la récupération des couleurs.');
+        });
+    }
+  }, [userEntreprise]);
+
+
   return (
     <div
       onClick={() => setIsSelected(false)}
@@ -134,6 +198,41 @@ export default function EditorButton({ initialPosition, initialStyles, children,
             <h3>Edit Button Style</h3>
             <div>
               <label>Text Color: </label>
+              {loading ? (
+                <span>Chargement des couleurs...</span>
+              ) : error ? (
+                <span style={{ color: 'red' }}>{error}</span>
+              ) : colors.length === 0 ? (
+                <span>Aucune couleur disponible.</span>
+              ) : (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    marginLeft: '10px',
+                    marginTop: '5px',
+                  }}
+                >
+                  {colors.map((c) => (
+                    <div
+                      key={c._id}
+                      onClick={() => handleStyleChange('color', c.couleur)}
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: c.couleur,
+                        border: styles.color === c.couleur ? '2px solid #000' : '1px solid #ccc',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'border 0.2s ease',
+                      }}
+                      title={c.couleur}
+                    />
+                  ))}
+                </div>
+              )}
+
               <input
                 type="color"
                 value={styles.color}
@@ -175,6 +274,40 @@ export default function EditorButton({ initialPosition, initialStyles, children,
             </div>
             <div>
               <label>Background Color: </label>
+              {loading ? (
+                <span>Chargement des couleurs...</span>
+              ) : error ? (
+                <span style={{ color: 'red' }}>{error}</span>
+              ) : colors.length === 0 ? (
+                <span>Aucune couleur disponible.</span>
+              ) : (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    marginLeft: '10px',
+                    marginTop: '5px',
+                  }}
+                >
+                  {colors.map((c) => (
+                    <div
+                      key={c._id}
+                      onClick={() => handleStyleChange('backgroundColor', c.couleur)}
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: c.couleur,
+                        border: styles.backgroundColor === c.couleur ? '2px solid #000' : '1px solid #ccc',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'border 0.2s ease',
+                      }}
+                      title={c.couleur}
+                    />
+                  ))}
+                </div>
+              )}
               <input
                 type="color"
                 value={styles.backgroundColor}
@@ -194,6 +327,40 @@ export default function EditorButton({ initialPosition, initialStyles, children,
             </div>
             <div>
               <label>Hover Color: </label>
+              {loading ? (
+                <span>Chargement des couleurs...</span>
+              ) : error ? (
+                <span style={{ color: 'red' }}>{error}</span>
+              ) : colors.length === 0 ? (
+                <span>Aucune couleur disponible.</span>
+              ) : (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    marginLeft: '10px',
+                    marginTop: '5px',
+                  }}
+                >
+                  {colors.map((c) => (
+                    <div
+                      key={c._id}
+                      onClick={() => handleStyleChange('hoverColor', c.couleur)}
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: c.couleur,
+                        border: styles.hoverColor === c.couleur ? '2px solid #000' : '1px solid #ccc',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'border 0.2s ease',
+                      }}
+                      title={c.couleur}
+                    />
+                  ))}
+                </div>
+              )}
               <input
                 type="color"
                 value={styles.hoverColor || '#000000'}

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowsUpDownLeftRight, faTimes, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
 
-export default function EditorImage({ initialPosition = { top: 0, left: 0 }, initialStyles = { width: 400, height: 300 }, src, alt, onSelect }) {
+export default function EditorImage({ initialPosition = { top: 0, left: 0 }, initialStyles = { width: 400, height: 300 }, src, alt, onSelect, onPositionChange, onStyleChange, onImageChange,    }) {
   const [position, setPosition] = useState({
     top: initialPosition.top || 0,
     left: typeof initialPosition.left === 'number' ? initialPosition.left : 0,
@@ -85,6 +85,15 @@ export default function EditorImage({ initialPosition = { top: 0, left: 0 }, ini
   const handleGlobalMouseUp = () => {
     setIsDragging(false);
     setResizing(null);
+
+    if (onStyleChange) {
+    onStyleChange({
+      ...styles,
+      width: styles.width,
+      height: styles.height,
+    });
+  }
+  
   };
 
   const handleResizeMouseDown = (handle, e) => {
@@ -104,20 +113,45 @@ export default function EditorImage({ initialPosition = { top: 0, left: 0 }, ini
     if (onSelect) onSelect('img');
   };
 
-  const handleStyleChange = (property, value) => {
-    setStyles((prev) => ({
-      ...prev,
-      [property]: value,
-    }));
-  };
+  // const handleStyleChange = (property, value) => {
+  //   setStyles((prev) => ({
+  //     ...prev,
+  //     [property]: value,
+  //   }));
+  // };
+
+  // const handleImageUpload = (e) => {
+  //   const file = e.target.files[0];
+  //   if (file && file.type.startsWith('image/')) {
+  //     const newSrc = URL.createObjectURL(file);
+  //     setImageSrc(newSrc);
+  //   }
+  // };
+
 
   const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      const newSrc = URL.createObjectURL(file);
-      setImageSrc(newSrc);
+  const file = e.target.files[0];
+  if (file && file.type.startsWith('image/')) {
+    const newSrc = URL.createObjectURL(file);
+    setImageSrc(newSrc);
+    if (onImageChange) {
+      onImageChange(file);
     }
-  };
+  }
+};
+
+const handleStyleChange = (property, value) => {
+  setStyles((prev) => {
+    const newStyles = {
+      ...prev,
+      [property]: value,
+    };
+    if (onStyleChange) {
+      onStyleChange(newStyles);
+    }
+    return newStyles;
+  });
+};
 
   const renderControlButtons = () => {
     if (!isSelected) return null;

@@ -7,6 +7,8 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import Modal from '../charteGraphique/Modal';
+import CharteGraphique from '../charteGraphique/charteGraphique';
 
 const devices = [
   { name: 'Desktop', width: 1480, minWidth: 1200 },
@@ -75,6 +77,7 @@ const WorkspaceLayout = () => {
   const [userEntreprise, setUserEntreprise] = useState(null);
   const [openPanel, setOpenPanel] = useState('solutions');
 
+  const [entrepriseName, setEntrepriseName] = useState(null);
   const [styles, setStyles] = useState({
     solutionsStyle: 0,
     eventsStyle: 0,
@@ -115,6 +118,28 @@ const WorkspaceLayout = () => {
       setLoading(false);
     }
   };
+
+  // Récupérer le nom de l'entreprise
+  const fetchEntrepriseName = async (userEntreprise) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('Token manquant pour récupérer le nom de l’entreprise.');
+      return;
+    }
+
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const entrepriseResponse = await axios.get(
+        `http://localhost:5000/entreprises/${userEntreprise}`,
+        config
+      );
+      setEntrepriseName(entrepriseResponse.data.nom || 'Unknown');
+    } catch (error) {
+      console.error('Erreur lors de la récupération du nom de l’entreprise:', error);
+      setError('Erreur lors de la récupération du nom de l’entreprise.');
+    }
+  };
+  
 
   // Récupérer les préférences
   const fetchPreferences = async () => {
@@ -209,6 +234,7 @@ const WorkspaceLayout = () => {
 
   useEffect(() => {
     if (userEntreprise) {
+      fetchEntrepriseName(userEntreprise);
       fetchPreferences();
     }
   }, [userEntreprise]);
@@ -227,6 +253,28 @@ const WorkspaceLayout = () => {
       setSelectedDevice(matchedDevice);
     }
   };
+
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+
+  // Fonction pour gérer la prévisualisation avec l'entrepriseId dans l'URL
+  const handlePreview = () => {
+    if (userEntreprise) {
+      window.location.href = `/homepage/${userEntreprise}/${entrepriseName}`;
+    } else {
+      setError('Entreprise non trouvée. Veuillez réessayer.');
+    }
+  };
+
 
   
   return (
@@ -269,11 +317,18 @@ const WorkspaceLayout = () => {
         </div>
 
 
-        <div>
-          <button className="view-button" onClick={() => window.location.href = '/homepage'}>
+        {/* <div>
+          <button className="view-button" onClick={() => window.location.href = '/homepage/'}>
+            Prévisualiser le site 
+          </button>
+        </div> */}
+
+         <div>
+          <button className="view-button" onClick={handlePreview}>
             Prévisualiser le site 
           </button>
         </div>
+        
         <div className="header-right">
           <div className="zoom-controls">
             <button onClick={() => setZoom(Math.max(10, zoom - 5))}>-</button>
@@ -411,6 +466,21 @@ const WorkspaceLayout = () => {
               <div className="property-row">
                 <label>Opacity</label>
                 <input type="number" defaultValue="100" />
+              </div>
+            </div>
+            <div className="property-group">
+              <h4>Charte Graphique</h4>
+              <div className="property-row">
+                {/* <button className="view-button" onClick={() => window.location.href = '/homepage'}>
+                  Consulter La Charte 
+                </button> */}
+
+                <button className="view-button" onClick={openModal}>
+        Consulter La Charte
+      </button>
+      <Modal isOpen={isModalOpen} onClose={closeModal} className="modal">
+        <CharteGraphique />
+      </Modal>
               </div>
             </div>
           </div>

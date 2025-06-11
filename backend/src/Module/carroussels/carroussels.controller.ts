@@ -14,10 +14,10 @@ export class CarrousselController {
     return this.carrousselService.create(createCarrousselDto);
   }
 
-  @Post()
-    async createCarroussel(@Body() createCarrousselDto: CreateCarrousselDto) {
-        return this.carrousselService.createCarroussel(createCarrousselDto);
-    }
+  // @Post()
+  //   async createCarroussel(@Body() createCarrousselDto: CreateCarrousselDto) {
+  //       return this.carrousselService.createCarroussel(createCarrousselDto);
+  //   }
 
   @Get()
   findAll() {

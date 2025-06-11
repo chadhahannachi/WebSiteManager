@@ -203,7 +203,7 @@ export default function OurServices({ styleIndex }) {
   return (
     <section className="services-section">
       {/* <h1 className="section-title">Our Services</h1> */}
-      <h1 className="section-title">NOS SERVICES</h1>
+      {/* <h1 className="section-title">NOS SERVICES</h1> */}
       {services.length > 0 ? (
         <ServiceComponent services={services} />
       ) : (

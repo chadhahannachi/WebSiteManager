@@ -144,7 +144,7 @@ export default function FaqStyleThree({ faqs, contentType = 'faq', styleKey = 's
   });
   const [pendingFaqStyles, setPendingFaqStyles] = useState({});
   const [userEntreprise, setUserEntreprise] = useState(null);
-
+  const [imageFile, setImageFile] = useState(null); // Ajout de l'état pour l'image
   // Validation functions
   const isValidPosition = (pos) => pos && typeof pos === 'object' && typeof pos.top === 'number' && typeof pos.left === 'number';
   const isValidStyle = (style) => style && typeof style === 'object' && Object.keys(style).length > 0;
@@ -320,109 +320,209 @@ export default function FaqStyleThree({ faqs, contentType = 'faq', styleKey = 's
     }
   };
 
+  // const handleFaqStyleChange = (faqId, newStyles) => {
+  //   console.log(`FAQ style change triggered for faqId ${faqId}:`, newStyles);
+  //   if (!faqId || faqId === 'undefined') {
+  //     console.warn(`Invalid faqId: ${faqId}`);
+  //     return;
+  //   }
+  //   if (isValidStyle(newStyles)) {
+  //     setPendingFaqStyles((prev) => ({
+  //       ...prev,
+  //       [faqId]: newStyles,
+  //     }));
+  //   } else {
+  //     console.warn(`Invalid FAQ styles for faqId ${faqId}:`, newStyles);
+  //   }
+  // };
+
+
   const handleFaqStyleChange = (faqId, newStyles) => {
-    console.log(`FAQ style change triggered for faqId ${faqId}:`, newStyles);
-    if (!faqId || faqId === 'undefined') {
-      console.warn(`Invalid faqId: ${faqId}`);
-      return;
-    }
-    if (isValidStyle(newStyles)) {
-      setPendingFaqStyles((prev) => ({
-        ...prev,
-        [faqId]: newStyles,
-      }));
-    } else {
-      console.warn(`Invalid FAQ styles for faqId ${faqId}:`, newStyles);
-    }
-  };
+  if (!faqId || faqId === 'undefined') {
+    console.warn(`Invalid faqId: ${faqId}`);
+    return;
+  }
+  if (isValidStyle(newStyles)) {
+    setPendingFaqStyles((prev) => ({
+      ...prev,
+      [faqId]: newStyles,
+    }));
+    setStyles((prev) => ({
+      ...prev,
+      faqList: {
+        ...prev.faqList,
+        button: newStyles.button || prev.faqList.button,
+        answer: newStyles.answer || prev.faqList.answer,
+      },
+    }));
+  }
+};
 
   // Save all changes to the backend
+  // const saveAllChanges = async () => {
+  //   console.log('saveAllChanges called');
+  //   console.log('userEntreprise:', userEntreprise);
+  //   console.log('positions:', positions);
+  //   console.log('styles:', styles);
+  //   console.log('texts:', texts);
+  //   console.log('pendingFaqStyles:', pendingFaqStyles);
+
+  //   if (!userEntreprise) {
+  //     toast.error("ID de l'entreprise manquant");
+  //     console.error('No userEntreprise provided');
+  //     return;
+  //   }
+
+  //   if (
+  //     !isValidPosition(positions.sectionName) ||
+  //     !isValidPosition(positions.subtitle) ||
+  //     !isValidPosition(positions.img) ||
+  //     !isValidPosition(positions.faqList) ||
+  //     !isValidStyle(styles.sectionName) ||
+  //     !isValidStyle(styles.subtitle) ||
+  //     !isValidStyle(styles.img) ||
+  //     !isValidStyle(styles.faqList) ||
+  //     !isValidText(texts.sectionName) ||
+  //     !isValidText(texts.subtitle)
+  //   ) {
+  //     console.error('Invalid positions, styles, or texts:', { positions, styles, texts });
+  //     toast.error('Données de position, style ou texte invalides');
+  //     return;
+  //   }
+
+  //   try {
+  //     console.log('Sending POST to http://localhost:5000/preferences/entreprise');
+  //     const preferencesResponse = await axios.post(
+  //       'http://localhost:5000/preferences/entreprise',
+  //       {
+  //         entreprise: userEntreprise,
+  //         preferences: {
+  //           [contentType]: {
+  //             [styleKey]: {
+  //               positions,
+  //               styles,
+  //               texts,
+  //             },
+  //           },
+  //         },
+  //       },
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
+  //     console.log('Preferences saved:', preferencesResponse.data);
+
+  //     if (Object.keys(pendingFaqStyles).length > 0) {
+  //       console.log('Saving FAQ styles');
+  //       for (const [faqId, faqStyles] of Object.entries(pendingFaqStyles)) {
+  //         if (faqId && faqId !== 'undefined' && isValidStyle(faqStyles)) {
+  //           console.log(`Sending PATCH to http://localhost:5000/contenus/FAQ/${faqId}/styles`);
+  //           const faqResponse = await axios.patch(
+  //             `http://localhost:5000/contenus/FAQ/${faqId}/styles`,
+  //             faqStyles,
+  //             {
+  //               headers: { Authorization: `Bearer ${token}` },
+  //             }
+  //           );
+  //           console.log(`FAQ styles saved for ${faqId}:`, faqResponse.data);
+  //         } else {
+  //           console.warn(`Skipping invalid faqId or styles: ${faqId}`, faqStyles);
+  //         }
+  //       }
+  //     } else {
+  //       console.log('No FAQ styles to save');
+  //     }
+
+  //     setPendingFaqStyles({});
+  //     toast.success('Modifications sauvegardées avec succès');
+  //   } catch (error) {
+  //     console.error('Error saving changes:', error);
+  //     if (error.response) {
+  //       console.error('Response error:', error.response.data);
+  //       toast.error(`Erreur: ${error.response.data.message || 'Échec de la sauvegarde'}`);
+  //     } else {
+  //       toast.error('Erreur réseau ou serveur indisponible');
+  //     }
+  //   }
+  // };
+
+
+
+  const handleImageChange = (file) => {
+    setImageFile(file);
+  };
+
+
   const saveAllChanges = async () => {
-    console.log('saveAllChanges called');
-    console.log('userEntreprise:', userEntreprise);
-    console.log('positions:', positions);
-    console.log('styles:', styles);
-    console.log('texts:', texts);
-    console.log('pendingFaqStyles:', pendingFaqStyles);
+  if (!userEntreprise) {
+    toast.error("ID de l'entreprise manquant");
+    return;
+  }
 
-    if (!userEntreprise) {
-      toast.error("ID de l'entreprise manquant");
-      console.error('No userEntreprise provided');
-      return;
-    }
-
-    if (
-      !isValidPosition(positions.sectionName) ||
-      !isValidPosition(positions.subtitle) ||
-      !isValidPosition(positions.img) ||
-      !isValidPosition(positions.faqList) ||
-      !isValidStyle(styles.sectionName) ||
-      !isValidStyle(styles.subtitle) ||
-      !isValidStyle(styles.img) ||
-      !isValidStyle(styles.faqList) ||
-      !isValidText(texts.sectionName) ||
-      !isValidText(texts.subtitle)
-    ) {
-      console.error('Invalid positions, styles, or texts:', { positions, styles, texts });
-      toast.error('Données de position, style ou texte invalides');
-      return;
-    }
-
-    try {
-      console.log('Sending POST to http://localhost:5000/preferences/entreprise');
-      const preferencesResponse = await axios.post(
-        'http://localhost:5000/preferences/entreprise',
-        {
-          entreprise: userEntreprise,
-          preferences: {
-            [contentType]: {
-              [styleKey]: {
-                positions,
-                styles,
-                texts,
-              },
+  try {
+    const preferencesResponse = await axios.post(
+      'http://localhost:5000/preferences/entreprise',
+      {
+        entreprise: userEntreprise,
+        preferences: {
+          [contentType]: {
+            [styleKey]: {
+              positions,
+              styles,
+              texts,
             },
           },
         },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      console.log('Preferences saved:', preferencesResponse.data);
-
-      if (Object.keys(pendingFaqStyles).length > 0) {
-        console.log('Saving FAQ styles');
-        for (const [faqId, faqStyles] of Object.entries(pendingFaqStyles)) {
-          if (faqId && faqId !== 'undefined' && isValidStyle(faqStyles)) {
-            console.log(`Sending PATCH to http://localhost:5000/contenus/FAQ/${faqId}/styles`);
-            const faqResponse = await axios.patch(
-              `http://localhost:5000/contenus/FAQ/${faqId}/styles`,
-              faqStyles,
-              {
-                headers: { Authorization: `Bearer ${token}` },
-              }
-            );
-            console.log(`FAQ styles saved for ${faqId}:`, faqResponse.data);
-          } else {
-            console.warn(`Skipping invalid faqId or styles: ${faqId}`, faqStyles);
-          }
-        }
-      } else {
-        console.log('No FAQ styles to save');
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
       }
+    );
 
-      setPendingFaqStyles({});
-      toast.success('Modifications sauvegardées avec succès');
-    } catch (error) {
-      console.error('Error saving changes:', error);
-      if (error.response) {
-        console.error('Response error:', error.response.data);
-        toast.error(`Erreur: ${error.response.data.message || 'Échec de la sauvegarde'}`);
-      } else {
-        toast.error('Erreur réseau ou serveur indisponible');
+    if (Object.keys(pendingFaqStyles).length > 0) {
+      for (const [faqId, faqStyles] of Object.entries(pendingFaqStyles)) {
+        if (faqId && faqId !== 'undefined' && isValidStyle(faqStyles)) {
+          await axios.patch(
+            `http://localhost:5000/contenus/FAQ/${faqId}/styles`,
+            faqStyles,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+        }
       }
     }
-  };
+
+    if (imageFile) {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      formData.append('entreprise', userEntreprise);
+      formData.append('contentType', contentType);
+      formData.append('styleKey', styleKey);
+
+      const imageResponse = await axios.post(
+        'http://localhost:5000/upload/image',
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      setStyles((prev) => ({
+        ...prev,
+        img: { ...prev.img, src: imageResponse.data.imageUrl },
+      }));
+    }
+
+    setPendingFaqStyles({});
+    toast.success('Modifications sauvegardées avec succès');
+  } catch (error) {
+    console.error('Error saving changes:', error);
+    toast.error('Erreur lors de la sauvegarde');
+  }
+};
 
   if (loading) {
     return <div>Chargement...</div>;
@@ -479,6 +579,7 @@ export default function FaqStyleThree({ faqs, contentType = 'faq', styleKey = 's
             onSelect={setSelectedElement}
             onPositionChange={(newPosition) => handlePositionChange('img', newPosition)}
             onStyleChange={(newStyles) => handleStyleChange('img', newStyles)}
+            onImageChange={handleImageChange}
           />
         </div>
       </div>

@@ -92,5 +92,20 @@ export class ContenuController {
     return this.contenuService.updateFaqStyles(id, styles);
   }
 
+
+  @Patch('Unite/:id/styles')
+  updateUniteStyles(@Param('id') id: string, @Body() styles: Record<string, any>) {
+    return this.contenuService.updateUniteStyles(id, styles);
+  }
+
+  @Patch('Service/:id/styles')
+  updateServiceStyles(@Param('id') id: string, @Body() styles: Record<string, any>) {
+    return this.contenuService.updateServiceStyles(id, styles);
+  }
+
+  @Patch('Solution/:id/styles')
+  updateSolutionStyles(@Param('id') id: string, @Body() styles: Record<string, any>) {
+    return this.contenuService.updateSolutionStyles(id, styles);
+  }
   
 }

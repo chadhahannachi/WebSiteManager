@@ -8,6 +8,7 @@
   padding: 10px 30px;
   background-color: #f6f6f6;
   text-align: left;
+  height: 700px;
   /* transition: filter 0.3s ease; Smooth transition for blur effect */
 }
 
@@ -364,4 +365,287 @@
 
 .style-two .service-card:hover .read-more-btn::before {
   background: #014268;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* .services-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  padding: 15px;
+}
+
+.service-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  text-align: left;
+}
+
+.image-container {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.service-image {
+  position: absolute;
+  object-fit: contain;
+  z-index: 2;
+}
+
+.style-editor-panel {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  max-width: 350px;
+  max-height: 80vh;
+  overflow-y: auto;
+  font-size: 0.9rem;
+}
+
+.style-editor-panel h3 {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+}
+
+.style-editor-panel h4 {
+  font-size: 1rem;
+  margin: 15px 0 10px;
+}
+
+.style-editor-panel h5 {
+  font-size: 0.95rem;
+  margin: 10px 0 8px;
+}
+
+.style-editor-panel label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+
+.style-editor-panel input,
+.style-editor-panel textarea,
+.style-editor-panel select {
+  width: 100%;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.style-editor-panel textarea {
+  min-height: 60px;
+  resize: none;
+}
+
+.style-editor-panel input[type="color"] {
+  height: 30px;
+  padding: 0;
+  width: 50px;
+}
+
+.style-editor-panel input[type="range"] {
+  width: 100%;
+}
+
+.style-editor-panel input[type="number"] {
+  width: 100px;
+}
+
+.style-editor-panel button {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.style-editor-panel button:hover {
+  background-color: #f5f5f5;
+}
+
+.element-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  background: #fff;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  z-index: 1000;
+}
+
+.element-controls button {
+  cursor: pointer;
+  font-size: 16px;
+  color: #000;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.element-controls button:hover {
+  background: #f5f5f5;
+}
+
+.service-card h3,
+.service-card p {
+  margin: 10px 0;
+}
+
+.service-card button {
+  margin-top: auto;
+  align-self: flex-start;
+} */
+
+.services-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  padding: 15px;
+}
+
+.service-card {
+  position: relative;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.draggable-element {
+  position: absolute;
+}
+
+.drag-handle {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.style-editor-panel {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  max-width: 350px;
+  max-height: 80vh;
+  overflow-y: auto;
+  font-size: 0.9rem;
+}
+
+.style-editor-panel h3 {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+}
+
+.style-editor-panel h4 {
+  font-size: 1rem;
+  margin: 15px 0 10px;
+}
+
+.style-editor-panel h5 {
+  font-size: 0.95rem;
+  margin: 10px 0 8px;
+}
+
+.style-editor-panel label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+
+.style-editor-panel input,
+.style-editor-panel textarea,
+.style-editor-panel select {
+  width: 100%;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.style-editor-panel textarea {
+  min-height: 60px;
+  resize: none;
+}
+
+.style-editor-panel input[type="color"] {
+  height: 30px;
+  padding: 0;
+  width: 50px;
+}
+
+.style-editor-panel input[type="range"] {
+  width: 100%;
+}
+
+.style-editor-panel input[type="number"] {
+  width: 100px;
+}
+
+.style-editor-panel input[type="number"][style*="width: 60px"] {
+  width: 60px;
+}
+
+.style-editor-panel button {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.style-editor-panel button:hover {
+  background-color: #f5f5f5;
+}
+
+.element-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  background: #fff;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  z-index: 1000;
+}
+
+.element-controls button {
+  cursor: pointer;
+  font-size: 16px;
+  color: #000;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.element-controls button:hover {
+  background: #f5f5f5;
 }

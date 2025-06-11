@@ -400,4 +400,59 @@ export class ContenuService {
       }
       return updatedFaq;
     }
+
+
+async updateUniteStyles(id: string, styles: Record<string, any>) {
+  try {
+    const updatedUnite = await this.uniteModel.findByIdAndUpdate(
+      id,
+      { $set: { styles } },
+      { new: true }
+    );
+    if (!updatedUnite) {
+      throw new NotFoundException(`Unite with ID ${id} not found`);
+    }
+    return updatedUnite;
+  } catch (error) {
+    throw new BadRequestException('Error updating unite styles');
+  }
+}
+
+async updateServiceStyles(id: string, styles: Record<string, any>) {
+  try {
+    const updatedService = await this.serviceModel.findByIdAndUpdate(
+      id,
+      { $set: { styles } },
+      { new: true }
+    );
+    if (!updatedService) {
+      throw new NotFoundException(`Service with ID ${id} not found`);
+    }
+    return updatedService;
+  } catch (error) {
+    throw new BadRequestException('Error updating Service styles');
+  }
+}
+
+
+async updateSolutionStyles(id: string, styles: Record<string, any>): Promise<Solution> {
+  try {
+    const updatedSolution = await this.solutionModel.findByIdAndUpdate(
+      id,
+      { $set: { styles } },
+      { new: true }
+    );
+    if (!updatedSolution) {
+      throw new NotFoundException(`Solution with ID ${id} not found`);
+    }
+    return updatedSolution;
+  } catch (error) {
+    throw new BadRequestException('Error updating Solution styles');
+  }
+}
+
+
+
+
+
 }

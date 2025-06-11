@@ -81,8 +81,19 @@ import Units from './units/Units';
 import OurServices from './services/OurServices';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import FaqSectionDisplay from '../GeneratedWebsite/faqs/FaqSectionDisplay';
+import UnitSectionDisplay from '../GeneratedWebsite/units/UnitSectionDisplay';
+import { useParams } from 'react-router-dom';
+import ServiceSectionDisplay from '../GeneratedWebsite/ServicesDisplay/ServiceSectionDisplay';
+import LatestEventsDisplay from '../GeneratedWebsite/events/LatestEventsDisplay';
+import SolutionSectionDisplay from '../GeneratedWebsite/solutions/SolutionSectionDisplay';
+import SliderDisplay from '../GeneratedWebsite/slider/SliderDisplay';
+import NewSectionDisplay from '../GeneratedWebsite/news/NewSectionDisplay';
+import TestimonialsDisplay from '../GeneratedWebsite/testimonials/TestimonialsDisplay';
 
 const HomePage = () => {
+  const { entrepriseId, entrepriseName } = useParams();
+
   const [styles, setStyles] = useState({
     solutionsStyle: 0,
     eventsStyle: 0,
@@ -95,41 +106,43 @@ const HomePage = () => {
     contactStyle: 0,
     sliderStyle: 0,
   });
-  const [userEntreprise, setUserEntreprise] = useState(null);
+  // const [userEntreprise, setUserEntreprise] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Fetch user enterprise
-  const fetchUserEntreprise = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setError('Token manquant. Veuillez vous connecter.');
-      setLoading(false);
-      return;
-    }
+  // const fetchUserEntreprise = async () => {
+  //   const token = localStorage.getItem('token');
+  //   if (!token) {
+  //     setError('Token manquant. Veuillez vous connecter.');
+  //     setLoading(false);
+  //     return;
+  //   }
 
-    try {
-      const decodedToken = jwtDecode(token);
-      const userId = decodedToken?.sub;
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const userResponse = await axios.get(`http://localhost:5000/auth/user/${userId}`, config);
-      setUserEntreprise(userResponse.data.entreprise);
-    } catch (error) {
-      console.error('Erreur lors de la récupération des données utilisateur:', error);
-      setError('Erreur lors de la récupération des données utilisateur.');
-      setLoading(false);
-    }
-  };
+  //   try {
+  //     const decodedToken = jwtDecode(token);
+  //     const userId = decodedToken?.sub;
+  //     const config = { headers: { Authorization: `Bearer ${token}` } };
+  //     const userResponse = await axios.get(`http://localhost:5000/auth/user/${userId}`, config);
+  //     setUserEntreprise(userResponse.data.entreprise);
+  //   } catch (error) {
+  //     console.error('Erreur lors de la récupération des données utilisateur:', error);
+  //     setError('Erreur lors de la récupération des données utilisateur.');
+  //     setLoading(false);
+  //   }
+  // };
 
   // Fetch preferences
   const fetchPreferences = async () => {
-    if (!userEntreprise) {
+    if (!entrepriseId) {
+      setError('ID de l\'entreprise manquant dans l\'URL.');
+      setLoading(false);
       return;
     }
 
     try {
       const response = await axios.get(
-        `http://localhost:5000/preferences/entreprise/${userEntreprise}/preferences`
+        `http://localhost:5000/preferences/entreprise/${entrepriseId}/preferences`
       );
       const fetchedPreferences = response.data.preferences || {
         solutionsStyle: 0,
@@ -184,15 +197,19 @@ const HomePage = () => {
     }
   };
 
-  useEffect(() => {
-    fetchUserEntreprise();
-  }, []);
+  // useEffect(() => {
+  //   fetchUserEntreprise();
+  // }, []);
 
   useEffect(() => {
-    if (userEntreprise) {
-      fetchPreferences();
-    }
-  }, [userEntreprise]);
+    fetchPreferences();
+  }, [entrepriseId]);
+
+  // useEffect(() => {
+  //   if (userEntreprise) {
+  //     fetchPreferences();
+  //   }
+  // }, [userEntreprise]);
 
   if (loading) return <div>Chargement...</div>;
   if (error) return <div>Erreur : {error}</div>;
@@ -200,18 +217,18 @@ const HomePage = () => {
   return (
     <div>
       <Navbar />
-      <div id="home"><Slider styleIndex={styles.sliderStyle} /></div>
+      <div id="home"><SliderDisplay styleIndex={styles.sliderStyle} entrepriseId={entrepriseId}  /></div>
       <div id="partners"><OurPartners styleIndex={styles.partnersStyle} /></div>
       <div id="about"><AboutUs styleIndex={styles.aboutStyle} /></div>
-      <div id="units"><Units styleIndex={styles.unitsStyle} /></div>
-      <div id="services"><OurServices styleIndex={styles.servicesStyle} /></div>
-      <div id="solutions"><OurSolutions styleIndex={styles.solutionsStyle} /></div>
-      <div id="events"><LatestEvents styleIndex={styles.eventsStyle} /></div>
-      <div id="news"><News styleIndex={styles.newsStyle} /></div>
-      <div id="testimonials"><Testimonials /></div>
-      <div id="faq"><FaqSection styleIndex={styles.faqStyle} /></div>
+      <div id="units"><UnitSectionDisplay styleIndex={styles.unitsStyle} entrepriseId={entrepriseId}  /></div>
+      <div id="services"><ServiceSectionDisplay styleIndex={styles.servicesStyle} entrepriseId={entrepriseId} /></div>
+      <div id="solutions"><SolutionSectionDisplay styleIndex={styles.solutionsStyle} entrepriseId={entrepriseId} /></div>
+      <div id="events"><LatestEventsDisplay styleIndex={styles.eventsStyle} entrepriseId={entrepriseId}  /></div>
+      <div id="news"><NewSectionDisplay styleIndex={styles.newsStyle} entrepriseId={entrepriseId} /></div>
+      <div id="testimonials"><TestimonialsDisplay entrepriseId={entrepriseId} /></div>
+      <div id="faq"><FaqSectionDisplay styleIndex={styles.faqStyle} entrepriseId={entrepriseId} /></div>
       <div id="contact"><ContactUs styleIndex={styles.contactStyle} /></div>
-      <Footer />
+      <Footer/>
     </div>
   );
 };

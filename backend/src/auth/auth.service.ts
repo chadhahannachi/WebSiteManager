@@ -287,14 +287,14 @@ async findSuperAdminABshore(): Promise<User[]> {
     }
   
     const token = this.jwtService.sign({ userId: user._id, role: user.role }, { expiresIn: '1h' });
-    const url = `http://localhost:3000/reset-password/${token}`;
+    const url = `http://localhost:3000/new-password/${token}`;
     const htmlContent = `
       <p>Bonjour ${user.nom},</p>
       <p>Vous avez demandé à réinitialiser votre mot de passe. Veuillez cliquer sur le lien ci-dessous pour réinitialiser votre mot de passe :</p>
       <p><a href="${url}">Réinitialiser le mot de passe</a></p>
       <p>Ce lien expire dans une heure.</p>
     `;
-    await this.mailerService.sendMail({
+    await this.mailerService.sendMail({ 
       to: email,
       subject: 'Password Reset',
       html: htmlContent,

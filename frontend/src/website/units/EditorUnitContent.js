@@ -1,8 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowsUpDownLeftRight, faTimes, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
-export default function EditorUnitContent({ unites, initialPosition = { top: 0, left: 0 }, initialStyles = {}, onSelect }) {
+const API_URL = 'http://localhost:5000/couleurs';
+
+export default function EditorUnitContent({ unites, initialPosition = { top: 0, left: 0 }, initialStyles = {}, onSelect, onStyleChange }) {
   const [position, setPosition] = useState({
     top: initialPosition.top || 0,
     left: typeof initialPosition.left === 'number' ? initialPosition.left : 0,
@@ -26,6 +30,12 @@ export default function EditorUnitContent({ unites, initialPosition = { top: 0, 
   const [isEditingStyles, setIsEditingStyles] = useState(false);
   const [isSelected, setIsSelected] = useState(false);
   const offset = useRef({ x: 0, y: 0 });
+
+  const [colors, setColors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [userEntreprise, setUserEntreprise] = useState(null);
+
 
   useEffect(() => {
     if (isDragging) {
@@ -72,22 +82,31 @@ export default function EditorUnitContent({ unites, initialPosition = { top: 0, 
     if (onSelect) onSelect('unitContent');
   };
 
+  // const handleStyleChange = (property, value, group) => {
+  //   if (group) {
+  //     setStyles(prev => ({
+  //       ...prev,
+  //       [group]: {
+  //         ...prev[group],
+  //         [property]: value
+  //       }
+  //     }));
+  //   } else {
+  //     setStyles(prev => ({
+  //       ...prev,
+  //       [property]: value
+  //     }));
+  //   }
+  // };
+
   const handleStyleChange = (property, value, group) => {
-    if (group) {
-      setStyles(prev => ({
-        ...prev,
-        [group]: {
-          ...prev[group],
-          [property]: value
-        }
-      }));
-    } else {
-      setStyles(prev => ({
-        ...prev,
-        [property]: value
-      }));
-    }
-  };
+  const newStyles = { ...styles };
+  if (group) newStyles[group][property] = value;
+  else newStyles[property] = value;
+
+  setStyles(newStyles);
+  if (onStyleChange) onStyleChange(newStyles); 
+};
 
   const renderControlButtons = () => {
     if (!isSelected) return null;
@@ -142,6 +161,62 @@ export default function EditorUnitContent({ unites, initialPosition = { top: 0, 
     );
   };
 
+
+  // Fetch user enterprise
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken?.sub;
+        if (userId) {
+          axios
+            .get(`http://localhost:5000/auth/user/${userId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+            .then((response) => {
+              setUserEntreprise(response.data.entreprise);
+              setLoading(false);
+            })
+            .catch((err) => {
+              console.error('Error fetching user data:', err);
+              setError('Erreur lors de la récupération des données utilisateur.');
+              setLoading(false);
+            });
+        } else {
+          setError('ID utilisateur manquant.');
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('Error decoding token:', err);
+        setError('Erreur lors du décodage du token.');
+        setLoading(false);
+      }
+    } else {
+      console.error('Token is missing from localStorage.');
+      setError('Token manquant. Veuillez vous connecter.');
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch company colors
+  useEffect(() => {
+    if (userEntreprise) {
+      axios
+        .get(`${API_URL}/entreprise/${userEntreprise}/couleurs`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        })
+        .then((res) => {
+          setColors(res.data);
+        })
+        .catch((err) => {
+          console.error('Erreur lors de la récupération des couleurs:', err);
+          setError('Erreur lors de la récupération des couleurs.');
+        });
+    }
+  }, [userEntreprise]);
+
+
   return (
     <div
       onClick={() => setIsSelected(false)}
@@ -186,6 +261,40 @@ export default function EditorUnitContent({ unites, initialPosition = { top: 0, 
             <h4>Title Styles</h4>
             <div>
               <label>Title Color: </label>
+              {loading ? (
+                <span>Chargement des couleurs...</span>
+              ) : error ? (
+                <span style={{ color: 'red' }}>{error}</span>
+              ) : colors.length === 0 ? (
+                <span>Aucune couleur disponible.</span>
+              ) : (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    marginLeft: '10px',
+                    marginTop: '5px',
+                  }}
+                >
+                  {colors.map((c) => (
+                    <div
+                      key={c._id}
+                      onClick={() => handleStyleChange('color', c.couleur, 'title')}
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: c.couleur,
+                        border: styles.title.color === c.couleur ? '2px solid #000' : '1px solid #ccc',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'border 0.2s ease',
+                      }}
+                      title={c.couleur}
+                    />
+                  ))}
+                </div>
+              )}
               <input
                 type="color"
                 value={styles.title.color}
@@ -218,6 +327,40 @@ export default function EditorUnitContent({ unites, initialPosition = { top: 0, 
             <h4>Description Styles</h4>
             <div>
               <label>Description Color: </label>
+              {loading ? (
+                <span>Chargement des couleurs...</span>
+              ) : error ? (
+                <span style={{ color: 'red' }}>{error}</span>
+              ) : colors.length === 0 ? (
+                <span>Aucune couleur disponible.</span>
+              ) : (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    marginLeft: '10px',
+                    marginTop: '5px',
+                  }}
+                >
+                  {colors.map((c) => (
+                    <div
+                      key={c._id}
+                      onClick={() => handleStyleChange('color', c.couleur, 'description')}
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: c.couleur,
+                        border: styles.description.color === c.couleur ? '2px solid #000' : '1px solid #ccc',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'border 0.2s ease',
+                      }}
+                      title={c.couleur}
+                    />
+                  ))}
+                </div>
+              )}
               <input
                 type="color"
                 value={styles.description.color}

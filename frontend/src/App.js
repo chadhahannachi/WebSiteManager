@@ -72,9 +72,20 @@ import Testimonials from "./website/testimonials/Testimonials";
 import Slider from "./website/slider/Slider";
 import HomePage from "./website/HomePage";
 import WorkspaceLayout from "./website/WorkspaceLayout";
-import WebsiteEditor from "./website/WebsiteEditor";
-import Editor from "./website/WebsiteEditor";
-import TextEditor from "./website/TextEditorBlock";
+// import WebsiteEditor from "./website/WebsiteEditor";
+// import Editor from "./website/WebsiteEditor";
+// import TextEditor from "./website/TextEditorBlock";
+import CharteGraphique from "./charteGraphique/charteGraphique";
+import ContentManager from "./website/contenuSpecifique/ContentManager";
+import Home3 from "./Home/app/home-3/page.tsx";
+import RootLayout from "./Home/app/layout.tsx";
+import AuthenticationPage from "./Home/app/authentication/page.js";
+import ForgotPasswordPage from "./Home/app/authentication/forgot-password/page.js";
+import CheckoutPage from "./Home/app/checkout/page.js";
+import PayDonePage from "./Home/app/pay-done/page.js";
+import NewPasswordPage from "./Home/app/authentication/new-password/page.js";
+import LicenceRequestManagement from "./BackofficeComponents/LicenceRequestManagement.js";
+import LicenceRequestDetails from "./BackofficeComponents/LicenceRequestDetails.js";
 
 
 function App() {
@@ -224,24 +235,41 @@ function App() {
           <Route path="/reset-password/:token" element={<ResetPassword />} />
 
 
+
+
           <Route path="/frontoffice" element={<SectionRenderer sections={sections}/>} />
 
           <Route path="/carroussels" element={<Carroussel sections={sections}/>} />
           <Route path="/addcarroussel" element={<AddCarroussel/>} />
+
+
+
           {/* <Route path="/contenu" element={<ContenuPage/>} /> */}
-          <Route path="/contenumenu" element={<ContenuMenu/>} />
+          {/* <Route path="/contenumenu" element={<ContenuMenu/>} />
           <Route path="/contenus/:type" element={<ContenuList />} />
-          <Route path="add" element={<AddContenu />} />
+          <Route path="add" element={<AddContenu />} /> */}
 
 
-        <Route path="/carrousseldisplay" element={<CarrouselDisplay />} />
+        {/* <Route path="/carrousseldisplay" element={<CarrouselDisplay />} /> */}
 
-        
-        <Route path="/homepage" element={<HomePage />} />
+
+        {/* <Route path="/homepage" element={<HomePage />} /> */}
         <Route path="/workspacelayout" element={<WorkspaceLayout />} />
-        <Route path="/Editor" element={<Editor />} />
+        {/* <Route path="/Editor" element={<Editor />} /> */}
+        <Route path="/CharteGraphique" element={<CharteGraphique />} />
+        <Route path="/contentm" element={<ContentManager />} />
+        <Route path="/homepage/:entrepriseId/:entrepriseName" element={<HomePage />} />
 
-        
+          <Route path="/hometh" element={<RootLayout><Home3 /></RootLayout>} />
+          <Route path="/authentication" element={<RootLayout>< AuthenticationPage/></RootLayout>} />
+          <Route path="/authentication/forgot-password" element={<RootLayout>< ForgotPasswordPage/></RootLayout>} />
+          <Route path="/checkout" element={<RootLayout>< CheckoutPage/></RootLayout>} />
+          <Route path="/pay-done" element={<RootLayout>< PayDonePage/></RootLayout>} />
+          <Route path="/new-password/:token" element={<NewPasswordPage />} />
+
+          <Route path="/licenceRequestList" element={<Layout><LicenceRequestManagement /></Layout>} />
+          <Route path="/licence-requests/:id" element={<LicenceRequestDetails />} />
+
         </Routes>
       </ThemeProvider>
     </ColorModeContext.Provider>
