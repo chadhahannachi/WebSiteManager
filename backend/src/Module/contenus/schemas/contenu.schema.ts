@@ -75,14 +75,18 @@ const VariableSchema = SchemaFactory.createForClass(Variable);
 //ContenuSpecifique
 @Schema()
 export class ContenuSpecifique extends Contenu {
+  @Prop()
+  layoutType: string;
+
+  @Prop({ type: Object, default: {} })
+  variables: Record<string, any>;
+
   @Prop({ required: true })
-  type: string;
+  html_component: string;
 
-  // @Prop({ type: Map, of: String, required: true }) // Map<string, string>
-  // variable: Map<string, string>;
+  @Prop({ required: true })
+  css_style: string;
 
-  @Prop({ type: [VariableSchema], default: [] }) // Tableau d'objets (key-value)
-  variables: Variable[];
 }
 export const ContenuSpecifiqueSchema = SchemaFactory.createForClass(ContenuSpecifique);
 

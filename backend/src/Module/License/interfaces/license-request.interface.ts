@@ -1,6 +1,7 @@
 export interface LicenseRequest {
   id: number;
   mongo_company_id: string;
+  company_name: string;
   type: string;
   status: string;
   created_at: string;

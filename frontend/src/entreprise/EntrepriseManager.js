@@ -193,18 +193,10 @@ const EntrepriseManager = () => {
       setSelectedEntrepriseId(entrepriseId);
       setLicenseModalOpen(true);
     } catch (error) {
-      if (error.response?.status === 404) {
         setSelectedLicense(null);
         setSelectedEntrepriseId(entrepriseId);
         setLicenseModalOpen(true);
-      } else {
-        console.error("Error fetching license:", error);
-        setSnackbar({
-          open: true,
-          message: "Erreur lors de la récupération de la licence.",
-          severity: "error",
-        });
-      }
+      
     } finally {
       setLicenseLoading(false);
     }
@@ -293,7 +285,7 @@ const EntrepriseManager = () => {
     setLicenseFormData(newFormData);
   };
 
-  const handleOpenAddLicenseModal = () => {
+  const handleOpenAddLicenseModal = async () => {
     const entreprise = entreprises.find(e => e.id === selectedEntrepriseId);
     
     if (!entreprise) {
@@ -305,19 +297,48 @@ const EntrepriseManager = () => {
       return;
     }
 
-    setLicenseFormData({
-      type: 'basic',
-      status: 'pending',
-      price: 50,
-      description: '',
-      start_date: '',
-      end_date: '',
-      license_key: generateLicenseKey(),
-      mongo_company_id: entreprise.id,
-      company_email: entreprise.contact,
-      licence_request_id: entreprise.idRequestLicence || ''
-    });
-    setAddLicenseModalOpen(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found');
+      }
+      
+      const config = {
+        headers: { Authorization: `Bearer ${token}` },
+      };
+      
+      // Fetch licence request details
+      const response = await axios.get(`http://localhost:5000/licence-requests/${entreprise.idRequestLicence}`, config);
+      const licenceRequest = response.data;
+
+      // Calculate dates
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + (licenceRequest.duration_months || 12));
+
+      // Set licence form data based on licence request
+      setLicenseFormData({
+        type: licenceRequest.type || 'basic',
+        status: 'pending',
+        price: licenceRequest.price || 50,
+        description: licenceRequest.description || '',
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0],
+        license_key: generateLicenseKey(),
+        mongo_company_id: entreprise.id,
+        company_email: entreprise.contact,
+        licence_request_id: entreprise.idRequestLicence
+      });
+      
+      setAddLicenseModalOpen(true);
+    } catch (error) {
+      console.error('Error fetching licence request:', error);
+      setSnackbar({
+        open: true,
+        message: 'Erreur lors de la récupération des détails de la demande de licence.',
+        severity: 'error'
+      });
+    }
   };
 
   const handleCloseAddLicenseModal = () => {

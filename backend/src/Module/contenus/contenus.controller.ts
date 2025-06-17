@@ -36,13 +36,16 @@
 // }
 
 
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Logger } from '@nestjs/common';
 import { ContenuService } from './contenus.service';
 import { CreateContenuDto } from './dto/create-contenu.dto';
 import { UpdateContenuDto } from './dto/update-contenu.dto';
+import { GenerateContenuDto } from './dto/generate-contenu.dto';
 
 @Controller('contenus')
 export class ContenuController {
+  private readonly logger = new Logger(ContenuController.name);
+
   constructor(private readonly contenuService: ContenuService) {}
 
   @Post(':type')
@@ -106,6 +109,26 @@ export class ContenuController {
   @Patch('Solution/:id/styles')
   updateSolutionStyles(@Param('id') id: string, @Body() styles: Record<string, any>) {
     return this.contenuService.updateSolutionStyles(id, styles);
+  }
+
+  @Post('generate/:entrepriseId')
+  async generateContent(
+    @Param('entrepriseId') entrepriseId: string,
+    @Body() generateDto: GenerateContenuDto
+  ) {
+    try {
+      this.logger.log(`Generating content for entreprise ${entrepriseId}`);
+      this.logger.debug('Generate DTO received:', generateDto);
+      
+      const content = await this.contenuService.generateContent(entrepriseId, generateDto);
+      this.logger.debug('Generated content saved:', content);
+      
+      return content;
+    } catch (error) {
+      this.logger.error('Error generating content:', error);
+      this.logger.error('Error stack:', error.stack);
+      throw error;
+    }
   }
   
 }

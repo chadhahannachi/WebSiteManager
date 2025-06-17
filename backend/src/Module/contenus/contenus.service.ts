@@ -47,7 +47,7 @@
 // }
 
 
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Contenu, ContenuDocument, Unite, UniteDocument } from './schemas/contenu.schema';
@@ -63,9 +63,13 @@ import { Service, ServiceDocument } from './schemas/contenu.schema';
 import { Solution, SolutionDocument } from './schemas/contenu.schema';
 import { CreateContenuDto } from './dto/create-contenu.dto';
 import { UpdateContenuDto } from './dto/update-contenu.dto';
+import { GeminiService } from './services/gemini.service';
+import { GenerateContenuDto } from './dto/generate-contenu.dto';
 
 @Injectable()
 export class ContenuService {
+  private readonly logger = new Logger(ContenuService.name);
+
   constructor(
     @InjectModel(Contenu.name) private contenuModel: Model<ContenuDocument>,
     @InjectModel(ContenuSpecifique.name) private contenuSpecifiqueModel: Model<ContenuSpecifiqueDocument>,
@@ -78,9 +82,9 @@ export class ContenuService {
     @InjectModel(Actualite.name) private actualiteModel: Model<ActualiteDocument>,
     @InjectModel(Service.name) private serviceModel: Model<ServiceDocument>,
     @InjectModel(Solution.name) private solutionModel: Model<SolutionDocument>,
-    @InjectModel(Unite.name) private uniteModel: Model<UniteDocument>
-    
-) {}
+    @InjectModel(Unite.name) private uniteModel: Model<UniteDocument>,
+    private geminiService: GeminiService
+  ) {}
 
   async create(createContenuDto: CreateContenuDto, type: string): Promise<any> {
     let contenu;
@@ -434,25 +438,52 @@ async updateServiceStyles(id: string, styles: Record<string, any>) {
   }
 }
 
-
-async updateSolutionStyles(id: string, styles: Record<string, any>): Promise<Solution> {
-  try {
-    const updatedSolution = await this.solutionModel.findByIdAndUpdate(
-      id,
-      { $set: { styles } },
-      { new: true }
-    );
-    if (!updatedSolution) {
-      throw new NotFoundException(`Solution with ID ${id} not found`);
+  async updateSolutionStyles(id: string, styles: Record<string, any>): Promise<Solution> {
+    try {
+      const updatedSolution = await this.solutionModel.findByIdAndUpdate(
+        id,
+        { $set: { styles } },
+        { new: true }
+      );
+      if (!updatedSolution) {
+        throw new NotFoundException(`Solution with ID ${id} not found`);
+      }
+      return updatedSolution;
+    } catch (error) {
+      throw new BadRequestException('Error updating Solution styles');
     }
-    return updatedSolution;
-  } catch (error) {
-    throw new BadRequestException('Error updating Solution styles');
   }
-}
 
+  async generateContent(entrepriseId: string, generateDto: GenerateContenuDto): Promise<ContenuSpecifiqueDocument> {
+    try {
+      this.logger.log(`Generating content for entreprise ${entrepriseId}`);
+      this.logger.debug('Generate DTO:', generateDto);
 
+      // Generate content using Gemini
+      const geminiResponse = await this.geminiService.generateContent(generateDto);
+      this.logger.debug(`Generated content from Gemini: ${JSON.stringify(geminiResponse)}`);
 
+      // No need to parse items here as Gemini now returns HTML and CSS directly
 
+      const newContenu = new this.contenuSpecifiqueModel({
+        titre: generateDto.title,
+        description: generateDto.description,
+        html_component: geminiResponse.html_component, // New field
+        css_style: geminiResponse.css_style, // New field
+        datePublication: new Date(),
+        isPublished: false,
+        entreprise: entrepriseId,
+      });
 
+      this.logger.debug(`Object to be saved: ${JSON.stringify(newContenu)}`); 
+
+      const savedContenu = await newContenu.save();
+      this.logger.debug(`Saved content: ${JSON.stringify(savedContenu)}`);
+      return savedContenu;
+    } catch (error) {
+      this.logger.error('Error in generateContent:', error);
+      this.logger.error('Error stack:', error.stack);
+      throw error;
+    }
+  }
 }

@@ -86,7 +86,8 @@ import PayDonePage from "./Home/app/pay-done/page.js";
 import NewPasswordPage from "./Home/app/authentication/new-password/page.js";
 import LicenceRequestManagement from "./BackofficeComponents/LicenceRequestManagement.js";
 import LicenceRequestDetails from "./BackofficeComponents/LicenceRequestDetails.js";
-
+import LicenceDetail from "./Home/components/LicenceDetail/LicenceDetail";
+import { ContenuGenerator } from "./components/ContenuGenerator/index.tsx";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -113,81 +114,27 @@ function App() {
         <CssBaseline />
         <Routes>
           {/* Routes avec Layout (Sidebar et Topbar) */}
-          <Route
-            path="/"
-            element={
-              <Layout>
-                <Dashboard />
-              </Layout>
-            }
-          />
-          <Route
-            path="/team"
-            element={
-              <Layout>
-                <Team />
-              </Layout>
-            }
-          />
-          <Route
-            path="/contacts"
-            element={
-              <Layout>
-                <Contacts />
-              </Layout>
-            }
-          />
-          <Route
-            path="/invoices"
-            element={
-              <Layout>
-                <Invoices />
-              </Layout>
-            }
-          />
-          <Route
-            path="/form"
-            element={
-              <Layout>
-                <Form />
-              </Layout>
-            }
-          />
-          <Route
-            path="/bar"
-            element={
-              <Layout>
-                <Bar />
-              </Layout>
-            }
-          />
-          <Route
-            path="/pie"
-            element={
-              <Layout>
-                <Pie />
-              </Layout>
-            }
-          />
-          <Route
-            path="/line"
-            element={
-              <Layout>
-                <Line />
-              </Layout>
-            }
-          />
-          <Route
-            path="/faq"
-            element={
-              <Layout>
-                <FAQ />
-              </Layout>
-            }
-          />
+          <Route path="/" element={<Layout><Dashboard /></Layout>} />
+          <Route path="/team" element={<Layout><Team /></Layout>} />
+          <Route path="/contacts" element={<Layout><Contacts /></Layout>} />
+          
+          <Route path="/invoices" element={<Layout><Invoices /></Layout>} />
+          
+          <Route path="/form" element={<Layout><Form /></Layout> } />
+          
+          <Route path="/bar" element={<Layout><Bar /></Layout> } />
+          
+          <Route path="/pie" element={<Layout><Pie /></Layout> } />
+          
+          <Route path="/line" element={<Layout><Line /></Layout> } />
+            
+          <Route path="/line" element={ <Layout><Line /></Layout>}/>
+          <Route path="/faq" element={<Layout><FAQ /></Layout>}/>
           <Route path="/calendar" element={<Layout><Calendar/></Layout>}/>
 
           <Route path="/geography" element={<Layout><Geography /></Layout>}/>
+
+
           <Route path="/ListSuperAdminABshore" element={<Layout><ListAdminABshore /></Layout>}/>
           <Route path="/update-user/:id" element={<Layout> <UpdateUser /> </Layout>}/>
           <Route path="/registration" element={<Layout><SignupForm /></Layout> }/>
@@ -265,10 +212,18 @@ function App() {
           <Route path="/authentication/forgot-password" element={<RootLayout>< ForgotPasswordPage/></RootLayout>} />
           <Route path="/checkout" element={<RootLayout>< CheckoutPage/></RootLayout>} />
           <Route path="/pay-done" element={<RootLayout>< PayDonePage/></RootLayout>} />
+          
           <Route path="/new-password/:token" element={<NewPasswordPage />} />
 
           <Route path="/licenceRequestList" element={<Layout><LicenceRequestManagement /></Layout>} />
           <Route path="/licence-requests/:id" element={<LicenceRequestDetails />} />
+          <Route path="/licence/:id" element={<LicenceDetail />} />
+
+
+<Route 
+            path="/contenugenerator/:entrepriseId" 
+            element={<ContenuGenerator />}
+          />
 
         </Routes>
       </ThemeProvider>

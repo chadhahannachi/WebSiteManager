@@ -22,6 +22,9 @@ import { WebsiteModule } from './Website/websites.module';
 import { PreferenceModule } from './Module/preferences/preferences.module';
 import { CouleurModule } from './Module/couleurs/couleurs.module';
 import { LicenseModule } from './Module/License/license.module';
+import { StripeModule } from './Module/stripe/stripe.module';
+import { PaymentModule } from './Module/payment/payment.module';
+import { NotificationModule } from './Module/notification/notification.module';
 
 @Module({
   imports: [
@@ -48,7 +51,10 @@ import { LicenseModule } from './Module/License/license.module';
     WebsiteModule,
     PreferenceModule,
     CouleurModule,
-    LicenseModule
+    LicenseModule,
+    StripeModule,
+    PaymentModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

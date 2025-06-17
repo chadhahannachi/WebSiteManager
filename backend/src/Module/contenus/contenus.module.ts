@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { ContenuController } from './contenus.controller';
 import { ContenuService } from './contenus.service';
+import { GeminiService } from './services/gemini.service';
 import { Actualite, ActualiteSchema, APropos, AProposSchema, Article, ArticleSchema, Contenu, ContenuSchema, ContenuSpecifique, ContenuSpecifiqueSchema, Evenement, EvenementSchema, FAQ, FAQSchema, Partenaire, PartenaireSchema, Service, ServiceSchema, Solution, SolutionSchema, Temoignage, TemoignageSchema, Unite, UniteSchema } from './schemas/contenu.schema';
 
 @Module({
@@ -21,7 +22,7 @@ import { Actualite, ActualiteSchema, APropos, AProposSchema, Article, ArticleSch
     { name: Unite.name, schema: UniteSchema },
   ]),],
   controllers: [ContenuController],
-  providers: [ContenuService],
+  providers: [ContenuService, GeminiService],
   exports: [ContenuService],
 })
 export class ContenuModule {}
