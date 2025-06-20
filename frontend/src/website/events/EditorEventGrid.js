@@ -7,7 +7,7 @@ import { jwtDecode } from 'jwt-decode';
 
 const API_URL = 'http://localhost:5000/couleurs';
 
-export default function EditorEventGrid({ events = [], initialPosition = { top: 0, left: 0 }, initialStyles = { width: 1500 }, onSelect, onPositionChange, onUpdate }) {
+export default function EditorEventGrid({ events = [], initialPosition = { top: 0, left: 0 }, initialStyles = { width: 1500 }, onSelect, onPositionChange, onUpdate, onStyleChange }) {
   const [position, setPosition] = useState({
     top: initialPosition.top || 0,
     left: initialPosition.left || 0,
@@ -50,10 +50,10 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
   const [isEditingStyles, setIsEditingStyles] = useState(false);
   const [isSelected, setIsSelected] = useState(false);
   const [resizing, setResizing] = useState(null);
-  const [editingEventIndex, setEditingEventIndex] = useState(null);
-  const [editingField, setEditingField] = useState(null);
+  // const [editingEventIndex, setEditingEventIndex] = useState(null);
+  // const [editingField, setEditingField] = useState(null);
   const offset = useRef({ x: 0, y: 0 });
-  const inputRef = useRef(null);
+  // const inputRef = useRef(null);
 
   const [colors, setColors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -117,8 +117,16 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
 
 
   useEffect(() => {
-    setEventData(events);
-  }, [events]);
+    setEventData(events.map((event) => ({
+      ...event,
+      styles: event.styles || cardStyles,
+      positions: event.positions || {
+        title: { top: 0, left: 0 },
+        description: { top: 0, left: 0 },
+        date: { top: 0, left: 0 },
+      },
+    })));
+  }, [events, cardStyles]);
 
   useEffect(() => {
     if (isDragging || resizing) {
@@ -134,11 +142,11 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
     };
   }, [isDragging, resizing]);
 
-  useEffect(() => {
-    if (editingEventIndex !== null && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [editingEventIndex, editingField]);
+  // useEffect(() => {
+  //   if (editingEventIndex !== null && inputRef.current) {
+  //     inputRef.current.focus();
+  //   }
+  // }, [editingEventIndex, editingField]);
 
   const handleMouseDown = (e) => {
     e.stopPropagation();
@@ -193,77 +201,78 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
     onSelect?.('eventGrid');
   };
 
-  const handleEditEvent = (index, field) => {
-    setEditingEventIndex(index);
-    setEditingField(field);
-  };
+  // const handleEditEvent = (index, field) => {
+  //   setEditingEventIndex(index);
+  //   setEditingField(field);
+  // };
 
-  const handleEventChange = (e, index, field) => {
-    const value = e.target.value;
-    setEventData((prev) => {
-      const newEvents = [...prev];
-      newEvents[index] = { ...newEvents[index], [field]: value };
-      if (newEvents[index]._id) {
-        setPendingChanges((prev) => ({
-          ...prev,
-          [newEvents[index]._id]: {
-            ...prev[newEvents[index]._id],
-            [field]: value,
+  // const handleEventChange = (e, index, field) => {
+  //   const value = e.target.value;
+  //   setEventData((prev) => {
+  //     const newEvents = [...prev];
+  //     newEvents[index] = { ...newEvents[index], [field]: value };
+  //     if (newEvents[index].id) {
+  //       setPendingChanges((prev) => ({
+  //         ...prev,
+  //         [newEvents[index].id]: {
+  //           ...prev[newEvents[index].id],
+  //           [field]: value,
+  //         },
+  //       }));
+  //       onUpdate?.(newEvents[index].id, { [field]: value });
+  //     }
+  //     return newEvents;
+  //   });
+  // };
+
+  const handleStyleChange = (property, value, subProperty) => {
+    console.log('handleStyleChange appelé:', { property, value, subProperty });
+    console.log('eventData avant modification:', eventData);
+    
+    setEventData((prevEvents) => {
+      const newEvents = prevEvents.map((event) => {
+        const updatedStyles = {
+          ...event.styles,
+          [subProperty]: {
+            ...event.styles[subProperty],
+            [property]: value,
           },
-        }));
-        onUpdate?.(newEvents[index]._id, { [field]: value });
-      }
+        };
+        
+        console.log(`Styles mis à jour pour l'événement ${event.id}:`, updatedStyles);
+        
+        // Appeler onStyleChange pour chaque événement
+        if (event.id) {
+          onStyleChange?.(event.id, updatedStyles);
+        }
+        
+        return {
+          ...event,
+          styles: updatedStyles,
+        };
+      });
+      
+      console.log('eventData après modification:', newEvents);
       return newEvents;
     });
   };
 
-  const handleStyleChange = (property, value, subProperty) => {
-    setCardStyles((prev) => {
-      const newStyles = {
-        ...prev,
-        [subProperty]: {
-          ...prev[subProperty],
-          [property]: value,
-        },
-      };
-      setEventData((prevEvents) => {
-        const newEvents = prevEvents.map((event) => ({
-          ...event,
-          styles: newStyles,
-        }));
-        newEvents.forEach((event) => {
-          if (event._id) {
-            setPendingChanges((prev) => ({
-              ...prev,
-              [event._id]: {
-                ...prev[event._id],
-                styles: newStyles,
-              },
-            }));
-            onUpdate?.(event._id, { styles: newStyles });
-          }
-        });
-        return newEvents;
-      });
-      return newStyles;
-    });
-  };
-
   const toggleTextStyle = (property, subProperty, value, defaultValue) => {
-    const currentValue = cardStyles[subProperty][property] || defaultValue;
+    const firstEvent = eventData[0];
+    const currentValue = firstEvent?.styles?.[subProperty]?.[property] || defaultValue;
     handleStyleChange(property, currentValue === value ? defaultValue : value, subProperty);
   };
 
-  const handleBlur = () => {
-    setEditingEventIndex(null);
-    setEditingField(null);
-  };
+  // const handleBlur = () => {
+  //   setEditingEventIndex(null);
+  //   setEditingField(null);
+  // };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && editingField !== 'desc') {
-      handleBlur();
-    }
-  };
+  // const handleKeyDown = (e) => {
+  //   if (e.key === 'Enter' && editingField !== 'desc') {
+  //     handleBlur();
+  //   }
+  // };
 
   const renderControlButtons = () => {
     if (!isSelected) return null;
@@ -422,7 +431,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                         width: '20px',
                         height: '20px',
                         backgroundColor: c.couleur,
-                        border: cardStyles.title.color === c.couleur ? '2px solid #000' : '1px solid #ccc',
+                        border: (eventData[0]?.styles?.title?.color || cardStyles.title.color) === c.couleur ? '2px solid #000' : '1px solid #ccc',
                         borderRadius: '4px',
                         cursor: 'pointer',
                         transition: 'border 0.2s ease',
@@ -434,7 +443,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
               )}
               <input
                 type="color"
-                value={cardStyles.title.color}
+                value={eventData[0]?.styles?.title?.color || cardStyles.title.color}
                 onChange={(e) => handleStyleChange('color', e.target.value, 'title')}
               />
             </div>
@@ -445,14 +454,14 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                 min="10"
                 max="50"
                 step="1"
-                value={parseInt(cardStyles.title.fontSize)}
+                value={parseInt(eventData[0]?.styles?.title?.fontSize || cardStyles.title.fontSize)}
                 onChange={(e) => handleStyleChange('fontSize', `${e.target.value}px`, 'title')}
               />
             </div>
             <div>
               <label>Font Family: </label>
               <select
-                value={cardStyles.title.fontFamily}
+                value={eventData[0]?.styles?.title?.fontFamily || cardStyles.title.fontFamily}
                 onChange={(e) => handleStyleChange('fontFamily', e.target.value, 'title')}
               >
                 <option value="Arial">Arial</option>
@@ -471,7 +480,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
             <div>
               <label>Text Align: </label>
               <select
-                value={cardStyles.title.textAlign}
+                value={eventData[0]?.styles?.title?.textAlign || cardStyles.title.textAlign}
                 onChange={(e) => handleStyleChange('textAlign', e.target.value, 'title')}
               >
                 <option value="left">Left</option>
@@ -485,7 +494,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                 onClick={() => toggleTextStyle('fontWeight', 'title', '700', 'normal')}
                 style={{
                   padding: '5px 10px',
-                  backgroundColor: cardStyles.title.fontWeight === '700' ? '#ccc' : '#fff',
+                  backgroundColor: (eventData[0]?.styles?.title?.fontWeight || cardStyles.title.fontWeight) === '700' ? '#ccc' : '#fff',
                   border: '1px solid #ccc',
                   borderRadius: '4px',
                   cursor: 'pointer',
@@ -497,7 +506,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                 onClick={() => toggleTextStyle('fontStyle', 'title', 'italic', 'normal')}
                 style={{
                   padding: '5px 10px',
-                  backgroundColor: cardStyles.title.fontStyle === 'italic' ? '#ccc' : '#fff',
+                  backgroundColor: (eventData[0]?.styles?.title?.fontStyle || cardStyles.title.fontStyle) === 'italic' ? '#ccc' : '#fff',
                   border: '1px solid #ccc',
                   borderRadius: '4px',
                   cursor: 'pointer',
@@ -509,7 +518,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                 onClick={() => toggleTextStyle('textDecoration', 'title', 'underline', 'none')}
                 style={{
                   padding: '5px 10px',
-                  backgroundColor: cardStyles.title.textDecoration === 'underline' ? '#ccc' : '#fff',
+                  backgroundColor: (eventData[0]?.styles?.title?.textDecoration || cardStyles.title.textDecoration) === 'underline' ? '#ccc' : '#fff',
                   border: '1px solid #ccc',
                   borderRadius: '4px',
                   cursor: 'pointer',
@@ -545,7 +554,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                         width: '20px',
                         height: '20px',
                         backgroundColor: c.couleur,
-                        border: cardStyles.description.color === c.couleur ? '2px solid #000' : '1px solid #ccc',
+                        border: (eventData[0]?.styles?.description?.color || cardStyles.description.color) === c.couleur ? '2px solid #000' : '1px solid #ccc',
                         borderRadius: '4px',
                         cursor: 'pointer',
                         transition: 'border 0.2s ease',
@@ -557,7 +566,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
               )}
               <input
                 type="color"
-                value={cardStyles.description.color}
+                value={eventData[0]?.styles?.description?.color || cardStyles.description.color}
                 onChange={(e) => handleStyleChange('color', e.target.value, 'description')}
               />
             </div>
@@ -568,14 +577,14 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                 min="10"
                 max="50"
                 step="1"
-                value={parseInt(cardStyles.description.fontSize)}
+                value={parseInt(eventData[0]?.styles?.description?.fontSize || cardStyles.description.fontSize)}
                 onChange={(e) => handleStyleChange('fontSize', `${e.target.value}px`, 'description')}
               />
             </div>
             <div>
               <label>Font Family: </label>
               <select
-                value={cardStyles.description.fontFamily}
+                value={eventData[0]?.styles?.description?.fontFamily || cardStyles.description.fontFamily}
                 onChange={(e) => handleStyleChange('fontFamily', e.target.value, 'description')}
               >
                 <option value="Arial">Arial</option>
@@ -594,7 +603,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
             <div>
               <label>Text Align: </label>
               <select
-                value={cardStyles.description.textAlign}
+                value={eventData[0]?.styles?.description?.textAlign || cardStyles.description.textAlign}
                 onChange={(e) => handleStyleChange('textAlign', e.target.value, 'description')}
               >
                 <option value="left">Left</option>
@@ -608,7 +617,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                 onClick={() => toggleTextStyle('fontWeight', 'description', '700', 'normal')}
                 style={{
                   padding: '5px 10px',
-                  backgroundColor: cardStyles.description.fontWeight === '700' ? '#ccc' : '#fff',
+                  backgroundColor: (eventData[0]?.styles?.description?.fontWeight || cardStyles.description.fontWeight) === '700' ? '#ccc' : '#fff',
                   border: '1px solid #ccc',
                   borderRadius: '4px',
                   cursor: 'pointer',
@@ -620,7 +629,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                 onClick={() => toggleTextStyle('fontStyle', 'description', 'italic', 'normal')}
                 style={{
                   padding: '5px 10px',
-                  backgroundColor: cardStyles.description.fontStyle === 'italic' ? '#ccc' : '#fff',
+                  backgroundColor: (eventData[0]?.styles?.description?.fontStyle || cardStyles.description.fontStyle) === 'italic' ? '#ccc' : '#fff',
                   border: '1px solid #ccc',
                   borderRadius: '4px',
                   cursor: 'pointer',
@@ -632,7 +641,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                 onClick={() => toggleTextStyle('textDecoration', 'description', 'underline', 'none')}
                 style={{
                   padding: '5px 10px',
-                  backgroundColor: cardStyles.description.textDecoration === 'underline' ? '#ccc' : '#fff',
+                  backgroundColor: (eventData[0]?.styles?.description?.textDecoration || cardStyles.description.textDecoration) === 'underline' ? '#ccc' : '#fff',
                   border: '1px solid #ccc',
                   borderRadius: '4px',
                   cursor: 'pointer',
@@ -668,7 +677,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                         width: '20px',
                         height: '20px',
                         backgroundColor: c.couleur,
-                        border: cardStyles.date.color === c.couleur ? '2px solid #000' : '1px solid #ccc',
+                        border: (eventData[0]?.styles?.date?.color || cardStyles.date.color) === c.couleur ? '2px solid #000' : '1px solid #ccc',
                         borderRadius: '4px',
                         cursor: 'pointer',
                         transition: 'border 0.2s ease',
@@ -680,7 +689,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
               )}
               <input
                 type="color"
-                value={cardStyles.date.color}
+                value={eventData[0]?.styles?.date?.color || cardStyles.date.color}
                 onChange={(e) => handleStyleChange('color', e.target.value, 'date')}
               />
             </div>
@@ -691,14 +700,14 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                 min="10"
                 max="50"
                 step="1"
-                value={parseInt(cardStyles.date.fontSize)}
+                value={parseInt(eventData[0]?.styles?.date?.fontSize || cardStyles.date.fontSize)}
                 onChange={(e) => handleStyleChange('fontSize', `${e.target.value}px`, 'date')}
               />
             </div>
             <div>
               <label>Font Family: </label>
               <select
-                value={cardStyles.date.fontFamily}
+                value={eventData[0]?.styles?.date?.fontFamily || cardStyles.date.fontFamily}
                 onChange={(e) => handleStyleChange('fontFamily', e.target.value, 'date')}
               >
                 <option value="Arial">Arial</option>
@@ -717,7 +726,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
             <div>
               <label>Text Align: </label>
               <select
-                value={cardStyles.date.textAlign}
+                value={eventData[0]?.styles?.date?.textAlign || cardStyles.date.textAlign}
                 onChange={(e) => handleStyleChange('textAlign', e.target.value, 'date')}
               >
                 <option value="left">Left</option>
@@ -731,7 +740,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                 onClick={() => toggleTextStyle('fontWeight', 'date', '700', 'normal')}
                 style={{
                   padding: '5px 10px',
-                  backgroundColor: cardStyles.date.fontWeight === '700' ? '#ccc' : '#fff',
+                  backgroundColor: (eventData[0]?.styles?.date?.fontWeight || cardStyles.date.fontWeight) === '700' ? '#ccc' : '#fff',
                   border: '1px solid #ccc',
                   borderRadius: '4px',
                   cursor: 'pointer',
@@ -743,7 +752,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                 onClick={() => toggleTextStyle('fontStyle', 'date', 'italic', 'normal')}
                 style={{
                   padding: '5px 10px',
-                  backgroundColor: cardStyles.date.fontStyle === 'italic' ? '#ccc' : '#fff',
+                  backgroundColor: (eventData[0]?.styles?.date?.fontStyle || cardStyles.date.fontStyle) === 'italic' ? '#ccc' : '#fff',
                   border: '1px solid #ccc',
                   borderRadius: '4px',
                   cursor: 'pointer',
@@ -755,7 +764,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                 onClick={() => toggleTextStyle('textDecoration', 'date', 'underline', 'none')}
                 style={{
                   padding: '5px 10px',
-                  backgroundColor: cardStyles.date.textDecoration === 'underline' ? '#ccc' : '#fff',
+                  backgroundColor: (eventData[0]?.styles?.date?.textDecoration || cardStyles.date.textDecoration) === 'underline' ? '#ccc' : '#fff',
                   border: '1px solid #ccc',
                   borderRadius: '4px',
                   cursor: 'pointer',
@@ -794,7 +803,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
       >
         {eventData.map((event, index) => (
           <div
-            key={event._id || index}
+            key={event.id || index}
             className="event-item"
             style={{
               width: 340,
@@ -828,8 +837,8 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
               }}
             >
               <div>
-                <h3 style={{ ...cardStyles.title, marginBottom: '10px' }}>
-                  {editingEventIndex === index && editingField === 'title' ? (
+                <h3 style={{ ...event.styles.title, marginBottom: '10px' }}>
+                  {/* {editingEventIndex === index && editingField === 'title' ? (
                     <input
                       ref={inputRef}
                       type="text"
@@ -837,16 +846,19 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                       onChange={(e) => handleEventChange(e, index, 'title')}
                       onBlur={handleBlur}
                       onKeyDown={handleKeyDown}
-                      style={{ width: '100%', fontSize: cardStyles.title.fontSize }}
+                      style={{ width: '100%', fontSize: event.styles.title.fontSize }}
                     />
                   ) : (
                     <span onClick={() => handleEditEvent(index, 'title')}>
                       {event.title}
                     </span>
-                  )}
+                  )} */}
+                    
+                    {event.title}
+
                 </h3>
-                <p style={{ ...cardStyles.description, marginBottom: '15px' }}>
-                  {editingEventIndex === index && editingField === 'desc' ? (
+                <p style={{ ...event.styles.description, marginBottom: '15px' }}>
+                  {/* {editingEventIndex === index && editingField === 'desc' ? (
                     <textarea
                       ref={inputRef}
                       value={event.desc || ''}
@@ -854,7 +866,7 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                       onBlur={handleBlur}
                       style={{
                         width: '100%',
-                        fontSize: cardStyles.description.fontSize,
+                        fontSize: event.styles.description.fontSize,
                         resize: 'none',
                         height: '60px',
                       }}
@@ -863,7 +875,8 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                     <span onClick={() => handleEditEvent(index, 'desc')}>
                       {event.desc}
                     </span>
-                  )}
+                  )} */}
+                    {event.desc}
                 </p>
               </div>
               <div
@@ -876,9 +889,9 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                   borderTop: '1px solid #e0e0e0',
                 }}
               >
-                <CalendarMonthIcon className="calendar-icon" style={{ marginRight: '5px', color: cardStyles.date.color }} />
-                <span style={{ ...cardStyles.date }}>
-                  {editingEventIndex === index && editingField === 'date' ? (
+                <CalendarMonthIcon className="calendar-icon" style={{ marginRight: '5px', color: event.styles.date.color }} />
+                <span style={{ ...event.styles.date }}>
+                  {/* {editingEventIndex === index && editingField === 'date' ? (
                     <input
                       ref={inputRef}
                       type="text"
@@ -886,13 +899,14 @@ export default function EditorEventGrid({ events = [], initialPosition = { top: 
                       onChange={(e) => handleEventChange(e, index, 'date')}
                       onBlur={handleBlur}
                       onKeyDown={handleKeyDown}
-                      style={{ width: '150px', fontSize: cardStyles.date.fontSize }}
+                      style={{ width: '150px', fontSize: event.styles.date.fontSize }}
                     />
                   ) : (
                     <span onClick={() => handleEditEvent(index, 'date')}>
                       {event.date}
                     </span>
-                  )}
+                  )} */}
+                    {event.date}
                 </span>
               </div>
             </div>

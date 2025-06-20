@@ -454,6 +454,22 @@ async updateServiceStyles(id: string, styles: Record<string, any>) {
     }
   }
 
+  async updateEvenementStyles(id: string, styles: Record<string, any>): Promise<Evenement> {
+    try {
+      const updatedEvenement = await this.evenementModel.findByIdAndUpdate(
+        id,
+        { $set: { styles } },
+        { new: true }
+      );
+      if (!updatedEvenement) {
+        throw new NotFoundException(`Evenement with ID ${id} not found`);
+      }
+      return updatedEvenement;
+    } catch (error) {
+      throw new BadRequestException('Error updating Evenement styles');
+    }
+  }
+
   async generateContent(entrepriseId: string, generateDto: GenerateContenuDto): Promise<ContenuSpecifiqueDocument> {
     try {
       this.logger.log(`Generating content for entreprise ${entrepriseId}`);

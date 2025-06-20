@@ -1,22 +1,4 @@
-// import React from 'react';
-// import './FaqSection.css';
-
-// export default function FaqStyleTwo({ faqs }) {
-//   return (
-//     <div>
-//       <h1>Frequently asked questions</h1>
-//       <p>Lorem ipsum est,en imptimerie Lorem ipsum est,en imptimerie</p>
-//     <div className="faq-grid style-two">
-//       {faqs.map((faq, index) => (
-//         <div key={index} className="faq-card">
-//           <h4>{faq.question}</h4>
-//           <p>{faq.answer}</p>
-//         </div>
-//       ))}
-//     </div></div>
-//   );
-// }
-
+ 
 import React, { useState, useEffect } from 'react';
 import './FaqSection.css';
 import EditorText from '../aboutus/EditorText';
@@ -117,19 +99,19 @@ export default function FaqStyleTwo({ faqs, contentType = 'faq', styleKey = 'sty
   // Récupérer les préférences de l'entreprise
   const fetchPreferences = async () => {
     if (!userEntreprise) {
-      console.log('userEntreprise not yet available');
+      // console.log('userEntreprise not yet available');
       return;
     }
 
     try {
-      console.log(`Fetching preferences for entrepriseId: ${userEntreprise}`);
+      // console.log(`Fetching preferences for entrepriseId: ${userEntreprise}`);
       const response = await axios.get(
         `http://localhost:5000/preferences/entreprise/${userEntreprise}/preferences`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log('Fetched preferences:', response.data);
+      // console.log('Fetched preferences:', response.data);
       const fetchedPreferences = response.data.preferences?.[contentType]?.[styleKey] || {};
 
       const newPositions = {
@@ -165,9 +147,9 @@ export default function FaqStyleTwo({ faqs, contentType = 'faq', styleKey = 'sty
           : texts.subtitle,
       };
 
-      console.log('Applying positions:', newPositions);
-      console.log('Applying styles:', newStyles);
-      console.log('Applying texts:', newTexts);
+      // console.log('Applying positions:', newPositions);
+      // console.log('Applying styles:', newStyles);
+      // console.log('Applying texts:', newTexts);
       setPositions(newPositions);
       setStyles(newStyles);
       setTexts(newTexts);
@@ -192,11 +174,11 @@ export default function FaqStyleTwo({ faqs, contentType = 'faq', styleKey = 'sty
   }, [userEntreprise]);
 
   const handlePositionChange = (element, newPosition) => {
-    console.log(`Position change triggered for ${element}:`, newPosition);
+    // console.log(`Position change triggered for ${element}:`, newPosition);
     if (isValidPosition(newPosition)) {
       setPositions((prev) => {
         const newPositions = { ...prev, [element]: newPosition };
-        console.log(`Updated positions state:`, newPositions);
+        // console.log(`Updated positions state:`, newPositions);
         return newPositions;
       });
     } else {
@@ -205,11 +187,11 @@ export default function FaqStyleTwo({ faqs, contentType = 'faq', styleKey = 'sty
   };
 
   const handleStyleChange = (element, newStyles) => {
-    console.log(`Style change triggered for ${element}:`, newStyles);
+    // console.log(`Style change triggered for ${element}:`, newStyles);
     if (isValidStyle(newStyles)) {
       setStyles((prev) => {
         const newStylesState = { ...prev, [element]: newStyles };
-        console.log(`Updated styles state:`, newStylesState);
+        // console.log(`Updated styles state:`, newStylesState);
         return newStylesState;
       });
     } else {
@@ -218,11 +200,11 @@ export default function FaqStyleTwo({ faqs, contentType = 'faq', styleKey = 'sty
   };
 
   const handleTextChange = (element, newText) => {
-    console.log(`Text change triggered for ${element}:`, newText);
+    // console.log(`Text change triggered for ${element}:`, newText);
     if (isValidText(newText)) {
       setTexts((prev) => {
         const newTexts = { ...prev, [element]: newText };
-        console.log(`Updated texts state:`, newTexts);
+        // console.log(`Updated texts state:`, newTexts);
         return newTexts;
       });
     } else {
@@ -231,7 +213,7 @@ export default function FaqStyleTwo({ faqs, contentType = 'faq', styleKey = 'sty
   };
 
   const handleFaqStyleChange = (faqId, newStyles) => {
-    console.log(`FAQ style change triggered for faqId ${faqId}:`, newStyles);
+    // console.log(`FAQ style change triggered for faqId ${faqId}:`, newStyles);
     if (!faqId || faqId === 'undefined') {
       console.warn(`Invalid faqId: ${faqId}`);
       return;
@@ -247,12 +229,12 @@ export default function FaqStyleTwo({ faqs, contentType = 'faq', styleKey = 'sty
   };
 
   const saveAllChanges = async () => {
-    console.log('saveAllChanges called');
-    console.log('userEntreprise:', userEntreprise);
-    console.log('positions:', positions);
-    console.log('styles:', styles);
-    console.log('texts:', texts);
-    console.log('pendingFaqStyles:', pendingFaqStyles);
+    // console.log('saveAllChanges called');
+    // console.log('userEntreprise:', userEntreprise);
+    // console.log('positions:', positions);
+    // console.log('styles:', styles);
+    // console.log('texts:', texts);
+    // console.log('pendingFaqStyles:', pendingFaqStyles);
 
     if (!userEntreprise) {
       toast.error("ID de l'entreprise manquant");
@@ -276,7 +258,7 @@ export default function FaqStyleTwo({ faqs, contentType = 'faq', styleKey = 'sty
     }
 
     try {
-      console.log('Sending POST to http://localhost:5000/preferences/entreprise');
+      // console.log('Sending POST to http://localhost:5000/preferences/entreprise');
       const preferencesResponse = await axios.post(
         'http://localhost:5000/preferences/entreprise',
         {
@@ -295,13 +277,13 @@ export default function FaqStyleTwo({ faqs, contentType = 'faq', styleKey = 'sty
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log('Preferences saved:', preferencesResponse.data);
+      // console.log('Preferences saved:', preferencesResponse.data);
 
       if (Object.keys(pendingFaqStyles).length > 0) {
-        console.log('Saving FAQ styles');
+        // console.log('Saving FAQ styles');
         for (const [faqId, faqStyles] of Object.entries(pendingFaqStyles)) {
           if (faqId && faqId !== 'undefined' && isValidStyle(faqStyles)) {
-            console.log(`Sending PATCH to http://localhost:5000/contenus/FAQ/${faqId}/styles`);
+            // console.log(`Sending PATCH to http://localhost:5000/contenus/FAQ/${faqId}/styles`);
             const faqResponse = await axios.patch(
               `http://localhost:5000/contenus/FAQ/${faqId}/styles`,
               faqStyles,
@@ -309,7 +291,7 @@ export default function FaqStyleTwo({ faqs, contentType = 'faq', styleKey = 'sty
                 headers: { Authorization: `Bearer ${token}` },
               }
             );
-            console.log(`FAQ styles saved for ${faqId}:`, faqResponse.data);
+            // console.log(`FAQ styles saved for ${faqId}:`, faqResponse.data);
           } else {
             console.warn(`Skipping invalid faqId or styles: ${faqId}`, faqStyles);
           }
@@ -375,92 +357,3 @@ export default function FaqStyleTwo({ faqs, contentType = 'faq', styleKey = 'sty
     </div>
   );
 }
-// import React, { useState } from 'react';
-// import './FaqSection.css';
-// import EditorText from '../aboutus/EditorText';
-// import EditorFaqGrid from './EditorFaqGrid';
-
-// export default function FaqStyleTwo({ faqs }) {
-//   const [selectedElement, setSelectedElement] = useState(null);
-
-//   const initialPositions = {
-//     sectionName: { top: 0, left: 0 },
-//     subtitle: { top: 60, left: 0 },
-//     faqGrid: { top: 50, left: 700 },
-//   };
-
-//   const initialStyles = {
-//     sectionName: { 
-//       color: '#333333', 
-//       fontSize: '2rem', 
-//       fontFamily: 'Arial',
-//       width: '100%',
-//       maxWidth: '600px'
-//     },
-//     subtitle: { 
-//       color: '#666666', 
-//       fontSize: '1rem', 
-//       fontFamily: 'Arial',
-//       marginBottom: '40px',
-//       width: '100%',
-//       maxWidth: '600px'
-//     },
-//     faqGrid: {
-//       width: 600,
-//       minHeight: 400,
-//       card: {
-//         backgroundColor: '#ffffff',
-//         border: '1px solid #e5e7eb',
-//       },
-//       question: {
-//         color: '#333333',
-//         fontSize: '1.125rem',
-//         fontFamily: 'Arial',
-//         fontWeight: 'normal',
-//         fontStyle: 'normal',
-//         textDecoration: 'none',
-//       },
-//       answer: {
-//         color: '#666666',
-//         fontSize: '1rem',
-//         fontFamily: 'Arial',
-//         fontWeight: 'normal',
-//         fontStyle: 'normal',
-//         textDecoration: 'none',
-//       },
-//     }
-//   };
-
-//   return (
-//     <div className="faq-style-two-container">
-//       <EditorText
-//         elementType="h1"
-//         initialPosition={initialPositions.sectionName}
-//         initialStyles={initialStyles.sectionName}
-//         onSelect={setSelectedElement}
-//       >
-//         Frequently asked questions
-//       </EditorText>
-      
-//       <EditorText
-//         elementType="p"
-//         initialPosition={initialPositions.subtitle}
-//         initialStyles={initialStyles.subtitle}
-//         onSelect={setSelectedElement}
-//       >
-//         Lorem ipsum est,en imptimerie Lorem ipsum est,en imptimerie
-//       </EditorText>
-      
-//       <EditorFaqGrid
-//         faqs={faqs}
-//         initialPosition={initialPositions.faqGrid}
-//         initialStyles={initialStyles.faqGrid}
-//         onSelect={setSelectedElement}
-//       />
-//     </div>
-//   );
-// }
-
-
-
-

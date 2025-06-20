@@ -115,7 +115,7 @@ export default function LeftSidebar({ onStyleChange, onToggle }) {
       const response = await axios.get(
         `http://localhost:5000/preferences/entreprise/${userEntreprise}/preferences`
       );
-      console.log('Réponse des préférences:', response.data);
+      // console.log('Réponse des préférences:', response.data);
       const fetchedPreferences = response.data.preferences || {
         solutionsStyle: 0,
         eventsStyle: 0,

@@ -1,587 +1,3 @@
-// import React, { useState, useRef, useEffect } from 'react';
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-// import { faArrowsUpDownLeftRight, faTimes, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
-
-// export default function EditorFaqGrid({ faqs, initialPosition = { top: 0, left: 0 }, initialStyles = { width: 600, minHeight: 400 }, onSelect }) {
-//   const [position, setPosition] = useState({
-//     top: initialPosition.top || 0,
-//     left: typeof initialPosition.left === 'number' ? initialPosition.left : 0,
-//   });
-//   const [styles, setStyles] = useState({
-//     width: parseFloat(initialStyles.width) || 600,
-//     minHeight: parseFloat(initialStyles.minHeight) || 400,
-//     card: {
-//       backgroundColor: initialStyles.card?.backgroundColor || '#ffffff',
-//       border: initialStyles.card?.border || '1px solid #e5e7eb',
-//     },
-//     question: {
-//       color: initialStyles.question?.color || '#333333',
-//       fontSize: initialStyles.question?.fontSize || '1.125rem',
-//       fontFamily: initialStyles.question?.fontFamily || 'Arial',
-//       fontWeight: initialStyles.question?.fontWeight || 'normal',
-//       fontStyle: initialStyles.question?.fontStyle || 'normal',
-//       textDecoration: initialStyles.question?.textDecoration || 'none',
-//     },
-//     answer: {
-//       color: initialStyles.answer?.color || '#666666',
-//       fontSize: initialStyles.answer?.fontSize || '1rem',
-//       fontFamily: initialStyles.answer?.fontFamily || 'Arial',
-//       fontWeight: initialStyles.answer?.fontWeight || 'normal',
-//       fontStyle: initialStyles.answer?.fontStyle || 'normal',
-//       textDecoration: initialStyles.answer?.textDecoration || 'none',
-//     },
-//   });
-//   const [faqData, setFaqData] = useState(faqs);
-//   const [isDragging, setIsDragging] = useState(false);
-//   const [isEditingStyles, setIsEditingStyles] = useState(false);
-//   const [isSelected, setIsSelected] = useState(false);
-//   const [resizing, setResizing] = useState(null);
-//   const [editingFaqIndex, setEditingFaqIndex] = useState(null);
-//   const [editingField, setEditingField] = useState(null);
-//   const offset = useRef({ x: 0, y: 0 });
-//   const inputRef = useRef(null);
-
-//   useEffect(() => {
-//     if (isDragging || resizing) {
-//       document.addEventListener('mousemove', handleMouseMove);
-//       document.addEventListener('mouseup', handleMouseUp);
-//     } else {
-//       document.removeEventListener('mousemove', handleMouseMove);
-//       document.removeEventListener('mouseup', handleMouseUp);
-//     }
-
-//     return () => {
-//       document.removeEventListener('mousemove', handleMouseMove);
-//       document.removeEventListener('mouseup', handleMouseUp);
-//     };
-//   }, [isDragging, resizing]);
-
-//   useEffect(() => {
-//     if (editingFaqIndex !== null && inputRef.current) {
-//       inputRef.current.focus();
-//     }
-//   }, [editingFaqIndex, editingField]);
-
-//   const handleMouseDown = (e) => {
-//     e.stopPropagation();
-//     offset.current = {
-//       x: e.clientX - position.left,
-//       y: e.clientY - position.top,
-//     };
-//     setIsDragging(true);
-//   };
-
-//   const handleMouseMove = (e) => {
-//     if (isDragging) {
-//       requestAnimationFrame(() => {
-//         setPosition({
-//           top: e.clientY - offset.current.y,
-//           left: e.clientX - offset.current.x,
-//         });
-//       });
-//     } else if (resizing) {
-//       const deltaX = e.clientX - offset.current.x;
-//       const deltaY = e.clientY - offset.current.y;
-
-//       let newWidth = styles.width;
-//       let newMinHeight = styles.minHeight;
-
-//       if (resizing === 'bottom-right') {
-//         newWidth = offset.current.width + deltaX;
-//         newMinHeight = offset.current.minHeight + deltaY;
-//       }
-
-//       newWidth = Math.max(newWidth, 300);
-//       newMinHeight = Math.max(newMinHeight, 200);
-
-//       setStyles((prev) => ({
-//         ...prev,
-//         width: newWidth,
-//         minHeight: newMinHeight,
-//       }));
-//     }
-//   };
-
-//   const handleMouseUp = () => {
-//     setIsDragging(false);
-//     setResizing(null);
-//   };
-
-//   const handleResizeMouseDown = (handle, e) => {
-//     e.stopPropagation();
-//     setResizing(handle);
-//     offset.current = {
-//       x: e.clientX,
-//       y: e.clientY,
-//       width: styles.width,
-//       minHeight: styles.minHeight,
-//     };
-//   };
-
-//   const handleElementClick = (e) => {
-//     e.stopPropagation();
-//     setIsSelected(true);
-//     if (onSelect) onSelect('faqGrid');
-//   };
-
-//   const handleEditFaq = (index, field) => {
-//     setEditingFaqIndex(index);
-//     setEditingField(field);
-//   };
-
-//   const handleFaqChange = (e, index, field) => {
-//     const newFaqs = [...faqData];
-//     newFaqs[index] = { ...newFaqs[index], [field]: e.target.value };
-//     setFaqData(newFaqs);
-//   };
-
-//   const handleBlur = () => {
-//     setEditingFaqIndex(null);
-//     setEditingField(null);
-//   };
-
-//   const handleKeyDown = (e) => {
-//     if (e.key === 'Enter') {
-//       handleBlur();
-//     }
-//   };
-
-//   const handleStyleChange = (property, value, subProperty = null) => {
-//     if (subProperty) {
-//       setStyles((prev) => ({
-//         ...prev,
-//         [subProperty]: {
-//           ...prev[subProperty],
-//           [property]: value,
-//         },
-//       }));
-//     } else {
-//       setStyles((prev) => ({
-//         ...prev,
-//         [property]: value,
-//       }));
-//     }
-//   };
-
-//   const toggleTextStyle = (property, subProperty, value, defaultValue) => {
-//     handleStyleChange(property, styles[subProperty][property] === value ? defaultValue : value, subProperty);
-//   };
-
-//   const renderControlButtons = () => {
-//     if (!isSelected) return null;
-
-//     return (
-//       <div
-//         className="element-controls"
-//         style={{
-//           position: 'absolute',
-//           top: position.top - 40,
-//           left: position.left,
-//           display: 'flex',
-//           flexDirection: 'column',
-//           alignItems: 'center',
-//           gap: '5px',
-//           backgroundColor: '#fff',
-//           padding: '8px',
-//           border: '1px solid #ccc',
-//           borderRadius: '4px',
-//           zIndex: 1000,
-//         }}
-//       >
-//         <button
-//           onMouseDown={handleMouseDown}
-//           style={{
-//             cursor: 'grab',
-//             fontSize: '16px',
-//             color: '#000',
-//             background: '#fff',
-//             border: '1px solid #ccc',
-//             borderRadius: '4px',
-//             padding: '4px',
-//           }}
-//         >
-//           <FontAwesomeIcon icon={faArrowsUpDownLeftRight} />
-//         </button>
-//         <button
-//           onClick={() => setIsEditingStyles(true)}
-//           style={{
-//             cursor: 'pointer',
-//             fontSize: '16px',
-//             color: '#000',
-//             background: '#fff',
-//             border: '1px solid #ccc',
-//             borderRadius: '4px',
-//             padding: '4px',
-//           }}
-//         >
-//           <FontAwesomeIcon icon={faWandMagicSparkles} />
-//         </button>
-//       </div>
-//     );
-//   };
-
-//   const renderResizeHandles = () => {
-//     if (!isSelected) return null;
-
-//     const handleSize = 8;
-//     const handles = [
-//       {
-//         name: 'bottom-right',
-//         cursor: 'nwse-resize',
-//         top: styles.minHeight - handleSize / 2,
-//         left: styles.width - handleSize / 2,
-//       },
-//     ];
-
-//     return handles.map((handle) => (
-//       <div
-//         key={handle.name}
-//         style={{
-//           position: 'absolute',
-//           top: position.top + handle.top,
-//           left: position.left + handle.left,
-//           width: handleSize,
-//           height: handleSize,
-//           backgroundColor: 'blue',
-//           cursor: handle.cursor,
-//           zIndex: 20,
-//         }}
-//         onMouseDown={(e) => handleResizeMouseDown(handle.name, e)}
-//       />
-//     ));
-//   };
-
-//   return (
-//     <div
-//       onClick={() => setIsSelected(false)}
-//       style={{ position: 'relative' }}
-//     >
-//       {renderControlButtons()}
-//       {renderResizeHandles()}
-//       {isEditingStyles && (
-//         <div
-//           className="style-editor-panel visible"
-//           style={{
-//             position: 'absolute',
-//             top: `${position.top || 0}px`,
-//             left: `${(position.left || 0) + 300}px`,
-//             backgroundColor: 'white',
-//             padding: '20px',
-//             borderRadius: '8px',
-//             boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-//             zIndex: 100,
-//           }}
-//         >
-//           <button
-//             onClick={() => setIsEditingStyles(false)}
-//             style={{
-//               position: 'absolute',
-//               top: '5px',
-//               right: '5px',
-//               background: 'transparent',
-//               border: 'none',
-//               cursor: 'pointer',
-//               fontSize: '16px',
-//               color: '#999',
-//             }}
-//             aria-label="Close editor"
-//           >
-//             <FontAwesomeIcon icon={faTimes} />
-//           </button>
-
-//           <div className="style-controls">
-//             <h3>Edit FAQ Grid Style</h3>
-//             <div>
-//               <label>Width: </label>
-//               <input
-//                 type="number"
-//                 min="300"
-//                 value={styles.width}
-//                 onChange={(e) => handleStyleChange('width', parseInt(e.target.value))}
-//               />
-//             </div>
-//             <div>
-//               <label>Min Height: </label>
-//               <input
-//                 type="number"
-//                 min="200"
-//                 value={styles.minHeight}
-//                 onChange={(e) => handleStyleChange('minHeight', parseInt(e.target.value))}
-//               />
-//             </div>
-//             <div>
-//               <label>Card Background Color: </label>
-//               <input
-//                 type="color"
-//                 value={styles.card.backgroundColor}
-//                 onChange={(e) => handleStyleChange('backgroundColor', e.target.value, 'card')}
-//               />
-//             </div>
-//             <div>
-//               <label>Card Border: </label>
-//               <input
-//                 type="text"
-//                 value={styles.card.border}
-//                 onChange={(e) => handleStyleChange('border', e.target.value, 'card')}
-//                 placeholder="e.g., 1px solid #e5e7eb"
-//               />
-//             </div>
-//             <h3>Question Text Style</h3>
-//             <div>
-//               <label>Color: </label>
-//               <input
-//                 type="color"
-//                 value={styles.question.color}
-//                 onChange={(e) => handleStyleChange('color', e.target.value, 'question')}
-//               />
-//             </div>
-//             <div>
-//               <label>Font Size: </label>
-//               <input
-//                 type="range"
-//                 min="0.5"
-//                 max="2"
-//                 step="0.1"
-//                 value={parseFloat(styles.question.fontSize)}
-//                 onChange={(e) => handleStyleChange('fontSize', `${e.target.value}rem`, 'question')}
-//               />
-//             </div>
-//             <div>
-//               <label>Font Family: </label>
-//               <select
-//                 value={styles.question.fontFamily}
-//                 onChange={(e) => handleStyleChange('fontFamily', e.target.value, 'question')}
-//               >
-//                 <option value="Arial" style={{ fontFamily: 'Arial' }}>Arial</option>
-//                 <option value="Times New Roman" style={{ fontFamily: 'Times New Roman' }}>Times New Roman</option>
-//                 <option value="Courier New" style={{ fontFamily: 'Courier New' }}>Courier New</option>
-//                 <option value="Georgia" style={{ fontFamily: 'Georgia' }}>Georgia</option>
-//                 <option value="Verdana" style={{ fontFamily: 'Verdana' }}>Verdana</option>
-//                 <option value="Poppins" style={{ fontFamily: 'Poppins' }}>Poppins</option>
-//                 <option value="Roboto" style={{ fontFamily: 'Roboto' }}>Roboto</option>
-//                 <option value="Open Sans" style={{ fontFamily: 'Open Sans' }}>Open Sans</option>
-//                 <option value="Montserrat" style={{ fontFamily: 'Montserrat' }}>Montserrat</option>
-//                 <option value="Lato" style={{ fontFamily: 'Lato' }}>Lato</option>
-//                 <option value="Inter" style={{ fontFamily: 'Inter' }}>Inter</option>
-                
-//               </select>
-//             </div>
-//             <div style={{ display: 'flex', gap: '10px' }}>
-//               <button
-//                 onClick={() => toggleTextStyle('fontWeight', 'question', 'bold', 'normal')}
-//                 style={{
-//                   padding: '5px 10px',
-//                   backgroundColor: styles.question.fontWeight === 'bold' ? '#ccc' : '#fff',
-//                   border: '1px solid #ccc',
-//                   borderRadius: '4px',
-//                   cursor: 'pointer',
-//                 }}
-//               >
-//                 <strong>B</strong>
-//               </button>
-//               <button
-//                 onClick={() => toggleTextStyle('fontStyle', 'question', 'italic', 'normal')}
-//                 style={{
-//                   padding: '5px 10px',
-//                   backgroundColor: styles.question.fontStyle === 'italic' ? '#ccc' : '#fff',
-//                   border: '1px solid #ccc',
-//                   borderRadius: '4px',
-//                   cursor: 'pointer',
-//                 }}
-//               >
-//                 <em>I</em>
-//               </button>
-//               <button
-//                 onClick={() => toggleTextStyle('textDecoration', 'question', 'underline', 'none')}
-//                 style={{
-//                   padding: '5px 10px',
-//                   backgroundColor: styles.question.textDecoration === 'underline' ? '#ccc' : '#fff',
-//                   border: '1px solid #ccc',
-//                   borderRadius: '4px',
-//                   cursor: 'pointer',
-//                 }}
-//               >
-//                 <u>U</u>
-//               </button>
-//             </div>
-//             <h3>Answer Text Style</h3>
-//             <div>
-//               <label>Color: </label>
-//               <input
-//                 type="color"
-//                 value={styles.answer.color}
-//                 onChange={(e) => handleStyleChange('color', e.target.value, 'answer')}
-//               />
-//             </div>
-//             <div>
-//               <label>Font Size: </label>
-//               <input
-//                 type="range"
-//                 min="0.5"
-//                 max="2"
-//                 step="0.1"
-//                 value={parseFloat(styles.answer.fontSize)}
-//                 onChange={(e) => handleStyleChange('fontSize', `${e.target.value}rem`, 'answer')}
-//               />
-//             </div>
-//             <div>
-//               <label>Font Family: </label>
-//               <select
-//                 value={styles.answer.fontFamily}
-//                 onChange={(e) => handleStyleChange('fontFamily', e.target.value, 'answer')}
-//               >
-//                 <option value="Arial" style={{ fontFamily: 'Arial' }}>Arial</option>
-//                 <option value="Times New Roman" style={{ fontFamily: 'Times New Roman' }}>Times New Roman</option>
-//                 <option value="Courier New" style={{ fontFamily: 'Courier New' }}>Courier New</option>
-//                 <option value="Georgia" style={{ fontFamily: 'Georgia' }}>Georgia</option>
-//                 <option value="Verdana" style={{ fontFamily: 'Verdana' }}>Verdana</option>
-//               </select>
-//             </div>
-//             <div style={{ display: 'flex', gap: '10px' }}>
-//               <button
-//                 onClick={() => toggleTextStyle('fontWeight', 'answer', 'bold', 'normal')}
-//                 style={{
-//                   padding: '5px 10px',
-//                   backgroundColor: styles.answer.fontWeight === 'bold' ? '#ccc' : '#fff',
-//                   border: '1px solid #ccc',
-//                   borderRadius: '4px',
-//                   cursor: 'pointer',
-//                 }}
-//               >
-//                 <strong>B</strong>
-//               </button>
-//               <button
-//                 onClick={() => toggleTextStyle('fontStyle', 'answer', 'italic', 'normal')}
-//                 style={{
-//                   padding: '5px 10px',
-//                   backgroundColor: styles.answer.fontStyle === 'italic' ? '#ccc' : '#fff',
-//                   border: '1px solid #ccc',
-//                   borderRadius: '4px',
-//                   cursor: 'pointer',
-//                 }}
-//               >
-//                 <em>I</em>
-//               </button>
-//               <button
-//                 onClick={() => toggleTextStyle('textDecoration', 'answer', 'underline', 'none')}
-//                 style={{
-//                   padding: '5px 10px',
-//                   backgroundColor: styles.answer.textDecoration === 'underline' ? '#ccc' : '#fff',
-//                   border: '1px solid #ccc',
-//                   borderRadius: '4px',
-//                   cursor: 'pointer',
-//                 }}
-//               >
-//                 <u>U</u>
-//               </button>
-//             </div>
-//           </div>
-//         </div>
-//       )}
-//       <div
-//         className="faq-grid style-two"
-//         style={{
-//           position: 'absolute',
-//           top: position.top,
-//           left: position.left,
-//           width: styles.width,
-//           minHeight: styles.minHeight,
-//           cursor: 'pointer',
-//         }}
-//         onClick={handleElementClick}
-//       >
-//         {faqData.map((faq, index) => (
-//           <div
-//             key={index}
-//             className="faq-card"
-//             style={{
-//               backgroundColor: styles.card.backgroundColor,
-//               border: styles.card.border,
-//             }}
-//           >
-//             {editingFaqIndex === index && editingField === 'question' ? (
-//               <input
-//                 ref={inputRef}
-//                 type="text"
-//                 value={faq.question}
-//                 onChange={(e) => handleFaqChange(e, index, 'question')}
-//                 onBlur={handleBlur}
-//                 onKeyDown={handleKeyDown}
-//                 style={{
-//                   width: '100%',
-//                   fontSize: styles.question.fontSize,
-//                   fontFamily: styles.question.fontFamily,
-//                   color: styles.question.color,
-//                   fontWeight: styles.question.fontWeight,
-//                   fontStyle: styles.question.fontStyle,
-//                   textDecoration: styles.question.textDecoration,
-//                   padding: '4px',
-//                   border: '1px solid #ccc',
-//                   outline: 'none',
-//                 }}
-//               />
-//             ) : (
-//               <h4
-//                 onClick={() => handleEditFaq(index, 'question')}
-//                 style={{
-//                   ...styles.question,
-//                   margin: '0 0 10px',
-//                   cursor: 'pointer',
-//                 }}
-//               >
-//                 {faq.question}
-//               </h4>
-//             )}
-//             {editingFaqIndex === index && editingField === 'answer' ? (
-//               <textarea
-//                 ref={inputRef}
-//                 value={faq.answer}
-//                 onChange={(e) => handleFaqChange(e, index, 'answer')}
-//                 onBlur={handleBlur}
-//                 onKeyDown={handleKeyDown}
-//                 style={{
-//                   width: '100%',
-//                   fontSize: styles.answer.fontSize,
-//                   fontFamily: styles.answer.fontFamily,
-//                   color: styles.answer.color,
-//                   fontWeight: styles.answer.fontWeight,
-//                   fontStyle: styles.answer.fontStyle,
-//                   textDecoration: styles.answer.textDecoration,
-//                   padding: '4px',
-//                   border: '1px solid #ccc',
-//                   outline: 'none',
-//                   resize: 'none',
-//                   minHeight: '60px',
-//                 }}
-//               />
-//             ) : (
-//               <p
-//                 onClick={() => handleEditFaq(index, 'answer')}
-//                 style={{
-//                   ...styles.answer,
-//                   margin: '0',
-//                   cursor: 'pointer',
-//                 }}
-//               >
-//                 {faq.answer}
-//               </p>
-//             )}
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
 import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowsUpDownLeftRight, faTimes, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
@@ -604,49 +20,16 @@ export default function EditorFaqGrid({ faqs, initialPosition = { top: 0, left: 
   const [isEditingStyles, setIsEditingStyles] = useState(false);
   const [isSelected, setIsSelected] = useState(false);
   const [resizing, setResizing] = useState(null);
-  const [editingFaqIndex, setEditingFaqIndex] = useState(null);
-  const [editingField, setEditingField] = useState(null);
+  // const [editingFaqIndex, setEditingFaqIndex] = useState(null);
+  // const [editingField, setEditingField] = useState(null);
   const offset = useRef({ x: 0, y: 0 });
-  const inputRef = useRef(null);
+  // const inputRef = useRef(null);
   const pendingStyles = useRef({}); // Stocke les styles en attente par FAQ
 
   const [colors, setColors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userEntreprise, setUserEntreprise] = useState(null);
-
-  // Valider les FAQs au montage et initialiser les styles
-//   useEffect(() => {
-//     const updatedFaqs = faqs.map((faq, index) => {
-//       if (!faq._id) {
-//         console.warn(`FAQ at index ${index} is missing _id:`, faq);
-//       }
-//       return {
-//         ...faq,
-//         styles: faq.styles || {
-//           card: { backgroundColor: '#ffffff', border: '1px solid #e5e7eb' },
-//           question: {
-//             color: '#333333',
-//             fontSize: '1.125rem',
-//             fontFamily: 'Arial',
-//             fontWeight: 'normal',
-//             fontStyle: 'normal',
-//             textDecoration: 'none',
-//           },
-//           answer: {
-//             color: '#666666',
-//             fontSize: '1rem',
-//             fontFamily: 'Arial',
-//             fontWeight: 'normal',
-//             fontStyle: 'normal',
-//             textDecoration: 'none',
-//           },
-//         },
-//       };
-//     });
-//     setFaqData(updatedFaqs);
-//   }, [faqs]);
-
 
 useEffect(() => {
     const updatedFaqs = faqs.map((faq, index) => {
@@ -698,11 +81,11 @@ useEffect(() => {
     };
   }, [isDragging, resizing]);
 
-  useEffect(() => {
-    if (editingFaqIndex !== null && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [editingFaqIndex, editingField]);
+  // useEffect(() => {
+  //   if (editingFaqIndex !== null && inputRef.current) {
+  //     inputRef.current.focus();
+  //   }
+  // }, [editingFaqIndex, editingField]);
 
   const handleMouseDown = (e) => {
     e.stopPropagation();
@@ -774,54 +157,27 @@ useEffect(() => {
     if (onSelect) onSelect('faqGrid');
   };
 
-  const handleEditFaq = (index, field) => {
-    setEditingFaqIndex(index);
-    setEditingField(field);
-  };
+  // const handleEditFaq = (index, field) => {
+  //   setEditingFaqIndex(index);
+  //   setEditingField(field);
+  // };
 
-  const handleFaqChange = (e, index, field) => {
-    const newFaqs = [...faqData];
-    newFaqs[index] = { ...newFaqs[index], [field]: e.target.value };
-    setFaqData(newFaqs);
-  };
+  // const handleFaqChange = (e, index, field) => {
+  //   const newFaqs = [...faqData];
+  //   newFaqs[index] = { ...newFaqs[index], [field]: e.target.value };
+  //   setFaqData(newFaqs);
+  // };
 
-  const handleBlur = () => {
-    setEditingFaqIndex(null);
-    setEditingField(null);
-  };
+  // const handleBlur = () => {
+  //   setEditingFaqIndex(null);
+  //   setEditingField(null);
+  // };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      handleBlur();
-    }
-  };
-
-//   const handleStyleChange = (property, value, subProperty, faqIndex) => {
-//     const faq = faqData[faqIndex];
-//     if (!faq._id) {
-//       console.warn(`FAQ at index ${faqIndex} is missing _id`);
-//       return;
-//     }
-//     setFaqData((prev) => {
-//       const newFaqs = [...prev];
-//       newFaqs[faqIndex] = {
-//         ...newFaqs[faqIndex],
-//         styles: {
-//           ...newFaqs[faqIndex].styles,
-//           [subProperty]: {
-//             ...newFaqs[faqIndex].styles[subProperty],
-//             [property]: value,
-//           },
-//         },
-//       };
-//       const updatedStyles = newFaqs[faqIndex].styles;
-//       pendingStyles.current[faq._id] = updatedStyles;
-//       if (onStyleChange) {
-//         onStyleChange(faq._id, updatedStyles);
-//       }
-//       return newFaqs;
-//     });
-//   };
+  // const handleKeyDown = (e) => {
+  //   if (e.key === 'Enter') {
+  //     handleBlur();
+  //   }
+  // };
 
 
 const handleStyleChange = (property, value, subProperty, faqIndex) => {
@@ -1349,107 +705,7 @@ const handleStyleChange = (property, value, subProperty, faqIndex) => {
           </div>
         </div>
       )}
-      {/* <div
-        className="faq-grid style-two"
-        style={{
-          position: 'absolute',
-          top: position.top,
-          left: position.left,
-          width: styles.width,
-          minHeight: styles.minHeight,
-          cursor: 'pointer',
-        }}
-        onClick={handleElementClick}
-      >
-        {faqData.map((faq, index) => (
-          <div
-            key={faq._id || index}
-            className="faq-card"
-            style={{
-              backgroundColor: faq.styles.card.backgroundColor || '#ffffff',
-              border: faq.styles.card.border || '1px solid #e5e7eb',
-            }}
-          >
-            {editingFaqIndex === index && editingField === 'question' ? (
-              <input
-                ref={inputRef}
-                type="text"
-                value={faq.question}
-                onChange={(e) => handleFaqChange(e, index, 'question')}
-                onBlur={handleBlur}
-                onKeyDown={handleKeyDown}
-                style={{
-                  width: '100%',
-                  fontSize: faq.styles.question.fontSize || '1.125rem',
-                  fontFamily: faq.styles.question.fontFamily || 'Arial',
-                  color: faq.styles.question.color || '#333333',
-                  fontWeight: faq.styles.question.fontWeight || 'normal',
-                  fontStyle: faq.styles.question.fontStyle || 'normal',
-                  textDecoration: faq.styles.question.textDecoration || 'none',
-                  padding: '4px',
-                  border: '1px solid #ccc',
-                  outline: 'none',
-                }}
-              />
-            ) : (
-              <h4
-                onClick={() => handleEditFaq(index, 'question')}
-                style={{
-                  fontSize: faq.styles.question.fontSize || '1.125rem',
-                  fontFamily: faq.styles.question.fontFamily || 'Arial',
-                  color: faq.styles.question.color || '#333333',
-                  fontWeight: faq.styles.question.fontWeight || 'normal',
-                  fontStyle: faq.styles.question.fontStyle || 'normal',
-                  textDecoration: faq.styles.question.textDecoration || 'none',
-                  margin: '0 0 10px',
-                  cursor: 'pointer',
-                }}
-              >
-                {faq.question}
-              </h4>
-            )}
-            {editingFaqIndex === index && editingField === 'answer' ? (
-              <textarea
-                ref={inputRef}
-                value={faq.answer}
-                onChange={(e) => handleFaqChange(e, index, 'answer')}
-                onBlur={handleBlur}
-                onKeyDown={handleKeyDown}
-                style={{
-                  width: '100%',
-                  fontSize: faq.styles.answer.fontSize || '1rem',
-                  fontFamily: faq.styles.answer.fontFamily || 'Arial',
-                  color: faq.styles.answer.color || '#666666',
-                  fontWeight: faq.styles.answer.fontWeight || 'normal',
-                  fontStyle: faq.styles.answer.fontStyle || 'normal',
-                  textDecoration: faq.styles.answer.textDecoration || 'none',
-                  padding: '4px',
-                  border: '1px solid #ccc',
-                  outline: 'none',
-                  resize: 'none',
-                  minHeight: '60px',
-                }}
-              />
-            ) : (
-              <p
-                onClick={() => handleEditFaq(index, 'answer')}
-                style={{
-                  fontSize: faq.styles.answer.fontSize || '1rem',
-                  fontFamily: faq.styles.answer.fontFamily || 'Arial',
-                  color: faq.styles.answer.color || '#666666',
-                  fontWeight: faq.styles.answer.fontWeight || 'normal',
-                  fontStyle: faq.styles.answer.fontStyle || 'normal',
-                  textDecoration: faq.styles.answer.textDecoration || 'none',
-                  margin: '0',
-                  cursor: 'pointer',
-                }}
-              >
-                {faq.answer}
-              </p>
-            )}
-          </div>
-        ))}
-      </div> */}
+      
 
 
       <div
@@ -1476,7 +732,7 @@ const handleStyleChange = (property, value, subProperty, faqIndex) => {
               borderRadius: '8px',
             }}
           >
-            {editingFaqIndex === index && editingField === 'question' ? (
+            {/* {editingFaqIndex === index && editingField === 'question' ? (
               <input
                 ref={inputRef}
                 type="text"
@@ -1513,8 +769,25 @@ const handleStyleChange = (property, value, subProperty, faqIndex) => {
               >
                 {faq.question}
               </h4>
-            )}
-            {editingFaqIndex === index && editingField === 'answer' ? (
+            )} */}
+
+              <h4
+                // onClick={() => handleEditFaq(index, 'question')}
+                style={{
+                  fontSize: faq.styles?.question?.fontSize || '1.125rem',
+                  fontFamily: faq.styles?.question?.fontFamily || 'Arial',
+                  color: faq.styles?.question?.color || '#333333',
+                  fontWeight: faq.styles?.question?.fontWeight || 'normal',
+                  fontStyle: faq.styles?.question?.fontStyle || 'normal',
+                  textDecoration: faq.styles?.question?.textDecoration || 'none',
+                  margin: '0 0 10px',
+                  cursor: 'pointer',
+                }}
+              >
+                {faq.question}
+              </h4>
+
+            {/* {editingFaqIndex === index && editingField === 'answer' ? (
               <textarea
                 ref={inputRef}
                 value={faq.answer}
@@ -1552,7 +825,22 @@ const handleStyleChange = (property, value, subProperty, faqIndex) => {
               >
                 {faq.answer}
               </p>
-            )}
+            )} */}
+            <p
+                // onClick={() => handleEditFaq(index, 'answer')}
+                style={{
+                  fontSize: faq.styles?.answer?.fontSize || '1rem',
+                  fontFamily: faq.styles?.answer?.fontFamily || 'Arial',
+                  color: faq.styles?.answer?.color || '#666666',
+                  fontWeight: faq.styles?.answer?.fontWeight || 'normal',
+                  fontStyle: faq.styles?.answer?.fontStyle || 'normal',
+                  textDecoration: faq.styles?.answer?.textDecoration || 'none',
+                  margin: '0',
+                  cursor: 'pointer',
+                }}
+              >
+                {faq.answer}
+              </p>
           </div>
         ))}
       </div>

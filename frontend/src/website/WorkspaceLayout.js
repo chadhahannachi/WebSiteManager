@@ -14,7 +14,7 @@ const devices = [
   { name: 'Desktop', width: 1480, minWidth: 1200 },
   { name: 'Tablet', width: 768 },
   { name: 'Mobile', width: 375 }
-];
+]; 
 
 const styleOptions = {
   solutions: [

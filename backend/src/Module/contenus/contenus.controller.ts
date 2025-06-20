@@ -111,6 +111,11 @@ export class ContenuController {
     return this.contenuService.updateSolutionStyles(id, styles);
   }
 
+  @Patch('Evenement/:id/styles')
+  updateEvenementStyles(@Param('id') id: string, @Body() styles: Record<string, any>) {
+    return this.contenuService.updateEvenementStyles(id, styles);
+  }
+
   @Post('generate/:entrepriseId')
   async generateContent(
     @Param('entrepriseId') entrepriseId: string,

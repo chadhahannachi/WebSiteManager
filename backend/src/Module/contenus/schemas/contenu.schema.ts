@@ -38,6 +38,9 @@ export class Contenu extends Document {
   @Prop({ type: Object, default: {} })
   styles: Record<string, any>;
 
+  @Prop({ type: Object, default: {} })
+  positions: Record<string, any>;
+
   @Prop()
   datePublication: Date;
 

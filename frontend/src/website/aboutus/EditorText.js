@@ -388,7 +388,7 @@ export default function EditorText({
   // Notify parent of position changes
   useEffect(() => {
     if (onPositionChange) {
-      console.log(`Notifying parent of position change:`, position);
+      // console.log(`Notifying parent of position change:`, position);
       onPositionChange(position);
     }
   }, [position, onPositionChange]);
@@ -396,7 +396,7 @@ export default function EditorText({
   // Notify parent of style changes
   useEffect(() => {
     if (onStyleChange) {
-      console.log(`Notifying parent of style change:`, styles);
+      // console.log(`Notifying parent of style change:`, styles);
       onStyleChange(styles);
     }
   }, [styles, onStyleChange]);
@@ -404,7 +404,7 @@ export default function EditorText({
   // Notify parent of text content changes
   useEffect(() => {
     if (onTextChange) {
-      console.log(`Notifying parent of text change:`, textContent);
+      // console.log(`Notifying parent of text change:`, textContent);
       onTextChange(textContent);
     }
   }, [textContent, onTextChange]);

@@ -1,21 +1,3 @@
-// import React from 'react';
-// import './OurSolutions.css';
-
-// export default function SolutionStyleOne({ solutions }) {
-//   return (
-//     <div className="solutions-container style-one">
-//       {solutions.map((solution, index) => (
-//         <div className="solution-card" key={index}>
-//           <div className="solution-number">{solution.id}</div>
-//           <h3>{solution.title}</h3>
-//           <p>{solution.description}</p>
-//         </div>
-//       ))}
-//     </div>
-//   );
-// }
-
-
 import React, { useState, useEffect } from 'react';
 import './OurSolutions.css';
 import EditorText from '../aboutus/EditorText';
@@ -25,6 +7,11 @@ import { toast } from 'react-toastify';
 import { jwtDecode } from 'jwt-decode';
 
 export default function SolutionStyleOne({ solutions, contentType = 'solutions', styleKey = 'styleOne' }) {
+  useEffect(() => {
+    console.log('SolutionStyleOne received solutions:', solutions);
+    console.log('Solutions with id:', solutions.filter(s => s.id).map(s => ({ id: s.id, title: s.title })));
+  }, [solutions]);
+  
   const [selectedElement, setSelectedElement] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -50,6 +37,7 @@ export default function SolutionStyleOne({ solutions, contentType = 'solutions',
     sectionName: 'NOS SOLUTIONS',
   });
   const [pendingSolutionStyles, setPendingSolutionStyles] = useState({});
+  const [pendingSolutionPositions, setPendingSolutionPositions] = useState({});
   const [userEntreprise, setUserEntreprise] = useState(null);
 
   // Validation functions
@@ -194,17 +182,68 @@ export default function SolutionStyleOne({ solutions, contentType = 'solutions',
   };
 
   const handleSolutionStyleChange = (solutionId, newStyles) => {
-    if (solutionId && isValidStyle(newStyles)) {
-      setPendingSolutionStyles((prev) => ({
+    console.log(`=== handleSolutionStyleChange called ===`);
+    console.log(`solutionId:`, solutionId);
+    console.log(`newStyles:`, newStyles);
+    console.log(`typeof solutionId:`, typeof solutionId);
+    console.log(`solutionId === 'undefined':`, solutionId === 'undefined');
+    console.log(`isValidStyle(newStyles):`, isValidStyle(newStyles));
+    
+    // alert(`Style modifié pour la solution ${solutionId}! Cliquez sur "Enregistrer les modifications" pour sauvegarder.`);
+    
+    if (!solutionId || solutionId === 'undefined') {
+      console.warn(`Invalid solutionId: ${solutionId}`);
+      return;
+    }
+    
+    if (isValidStyle(newStyles)) {
+      console.log(`Before setPendingSolutionStyles:`, pendingSolutionStyles);
+      setPendingSolutionStyles((prev) => {
+        const newState = {
+          ...prev,
+          [solutionId]: newStyles,
+        };
+        console.log(`New pendingSolutionStyles state:`, newState);
+        return newState;
+      });
+      console.log(`Styles ajoutés à pendingSolutionStyles pour ${solutionId}:`, newStyles);
+    } else {
+      console.warn(`Invalid solution styles for solutionId ${solutionId}:`, newStyles);
+    }
+  };
+
+  const handleSolutionPositionChange = (solutionId, newPositions) => {
+    console.log(`=== handleSolutionPositionChange called ===`);
+    console.log(`solutionId:`, solutionId);
+    console.log(`newPositions:`, newPositions);
+    
+    if (!solutionId || solutionId === 'undefined') {
+      console.warn(`Invalid solutionId: ${solutionId}`);
+      return;
+    }
+    
+    if (newPositions && typeof newPositions === 'object') {
+      setPendingSolutionPositions((prev) => ({
         ...prev,
-        [solutionId]: newStyles,
+        [solutionId]: newPositions,
       }));
+      console.log(`Positions ajoutées à pendingSolutionPositions pour ${solutionId}:`, newPositions);
+    } else {
+      console.warn(`Invalid solution positions for solutionId ${solutionId}:`, newPositions);
     }
   };
 
   const saveAllChanges = async () => {
+    console.log('saveAllChanges called');
+    console.log('userEntreprise:', userEntreprise);
+    console.log('positions:', positions);
+    console.log('styles:', styles);
+    console.log('texts:', texts);
+    console.log('pendingSolutionStyles:', pendingSolutionStyles);
+
     if (!userEntreprise) {
       toast.error("ID de l'entreprise manquant");
+      console.error('No userEntreprise provided');
       return;
     }
 
@@ -215,11 +254,13 @@ export default function SolutionStyleOne({ solutions, contentType = 'solutions',
       !isValidStyle(styles.solutionGrid) ||
       !isValidText(texts.sectionName)
     ) {
+      console.error('Invalid positions, styles, or texts:', { positions, styles, texts });
       toast.error('Données de position, style ou texte invalides');
       return;
     }
 
     try {
+      console.log('Sending POST to http://localhost:5000/preferences/entreprise');
       const preferencesResponse = await axios.post(
         'http://localhost:5000/preferences/entreprise',
         {
@@ -238,24 +279,69 @@ export default function SolutionStyleOne({ solutions, contentType = 'solutions',
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      console.log('Preferences saved:', preferencesResponse.data);
 
-      for (const [solutionId, solutionStyles] of Object.entries(pendingSolutionStyles)) {
-        if (solutionId && isValidStyle(solutionStyles)) {
-          await axios.patch(
-            `http://localhost:5000/contenus/solutions/${solutionId}/styles`,
-            solutionStyles,
-            {
-              headers: { Authorization: `Bearer ${token}` },
+      if (Object.keys(pendingSolutionStyles).length > 0) {
+        console.log('Saving solution styles');
+        for (const [solutionId, solutionStyles] of Object.entries(pendingSolutionStyles)) {
+          if (solutionId && solutionId !== 'undefined' && isValidStyle(solutionStyles)) {
+            try {
+              const solutionResponse = await axios.patch(
+                `http://localhost:5000/contenus/Solution/${solutionId}/styles`,
+                solutionStyles,
+                {
+                  headers: { Authorization: `Bearer ${token}` },
+                }
+              );
+              console.log(`Solution styles saved for ${solutionId}:`, solutionResponse.data);
+            } catch (endpointError) {
+              console.error(`Failed to save styles for solution ${solutionId}:`, endpointError.response?.status, endpointError.response?.data);
+              toast.error(`Erreur lors de la sauvegarde des styles pour la solution ${solutionId}`);
             }
-          );
+          } else {
+            console.warn(`Skipping invalid solutionId or styles: ${solutionId}`, solutionStyles);
+          }
         }
+      } else {
+        console.log('No solution styles to save');
+      }
+
+      if (Object.keys(pendingSolutionPositions).length > 0) {
+        console.log('Saving solution positions');
+        for (const [solutionId, solutionPositions] of Object.entries(pendingSolutionPositions)) {
+          if (solutionId && solutionId !== 'undefined' && solutionPositions) {
+            try {
+              const solutionResponse = await axios.patch(
+                `http://localhost:5000/contenus/Solution/${solutionId}`,
+                { positions: solutionPositions },
+                {
+                  headers: { Authorization: `Bearer ${token}` },
+                }
+              );
+              console.log(`Solution positions saved for ${solutionId}:`, solutionResponse.data);
+            } catch (endpointError) {
+              console.error(`Failed to save positions for solution ${solutionId}:`, endpointError.response?.status, endpointError.response?.data);
+              toast.error(`Erreur lors de la sauvegarde des positions pour la solution ${solutionId}`);
+            }
+          } else {
+            console.warn(`Skipping invalid solutionId or positions: ${solutionId}`, solutionPositions);
+          }
+        }
+      } else {
+        console.log('No solution positions to save');
       }
 
       setPendingSolutionStyles({});
+      setPendingSolutionPositions({});
       toast.success('Modifications sauvegardées avec succès');
     } catch (error) {
       console.error('Error saving changes:', error);
-      toast.error('Erreur lors de la sauvegarde');
+      if (error.response) {
+        console.error('Response error:', error.response.data);
+        toast.error(`Erreur: ${error.response.data.message || 'Échec de la sauvegarde'}`);
+      } else {
+        toast.error('Erreur réseau ou serveur indisponible');
+      }
     }
   };
 
@@ -286,7 +372,8 @@ export default function SolutionStyleOne({ solutions, contentType = 'solutions',
         initialStyles={styles.solutionGrid}
         onSelect={setSelectedElement}
         onPositionChange={(newPosition) => handlePositionChange('solutionGrid', newPosition)}
-        onUpdate={handleSolutionStyleChange}
+        onStyleChange={handleSolutionStyleChange}
+        onUpdate={handleSolutionPositionChange}
       />
       <button onClick={saveAllChanges}>Enregistrer les modifications</button>
     </div>

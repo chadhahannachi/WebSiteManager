@@ -200,14 +200,14 @@ export default function UnitStyleTwo({ unites, contentType = 'unite', styleKey =
     }
 
     try {
-      console.log(`Fetching preferences for entrepriseId: ${userEntreprise}`);
+      // console.log(`Fetching preferences for entrepriseId: ${userEntreprise}`);
       const response = await axios.get(
         `http://localhost:5000/preferences/entreprise/${userEntreprise}/preferences`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log('Fetched preferences:', response.data);
+      // console.log('Fetched preferences:', response.data);
       const fetchedPreferences = response.data.preferences?.[contentType]?.[styleKey] || {};
 
       const newPositions = {
@@ -243,9 +243,9 @@ export default function UnitStyleTwo({ unites, contentType = 'unite', styleKey =
           : texts.subtitle,
       };
 
-      console.log('Applying positions:', newPositions);
-      console.log('Applying styles:', newStyles);
-      console.log('Applying texts:', newTexts);
+      // console.log('Applying positions:', newPositions);
+      // console.log('Applying styles:', newStyles);
+      // console.log('Applying texts:', newTexts);
       setPositions(newPositions);
       setStyles(newStyles);
       setTexts(newTexts);
@@ -270,11 +270,11 @@ export default function UnitStyleTwo({ unites, contentType = 'unite', styleKey =
   }, [userEntreprise]);
 
   const handlePositionChange = (element, newPosition) => {
-    console.log(`Position change triggered for ${element}:`, newPosition);
+    // console.log(`Position change triggered for ${element}:`, newPosition);
     if (isValidPosition(newPosition)) {
       setPositions((prev) => {
         const newPositions = { ...prev, [element]: newPosition };
-        console.log(`Updated positions state:`, newPositions);
+        // console.log(`Updated positions state:`, newPositions);
         return newPositions;
       });
     } else {
@@ -283,11 +283,11 @@ export default function UnitStyleTwo({ unites, contentType = 'unite', styleKey =
   };
 
   const handleStyleChange = (element, newStyles) => {
-    console.log(`Style change triggered for ${element}:`, newStyles);
+    // console.log(`Style change triggered for ${element}:`, newStyles);
     if (isValidStyle(newStyles)) {
       setStyles((prev) => {
         const newStylesState = { ...prev, [element]: newStyles };
-        console.log(`Updated styles state:`, newStylesState);
+        // console.log(`Updated styles state:`, newStylesState);
         return newStylesState;
       });
     } else {
@@ -296,11 +296,11 @@ export default function UnitStyleTwo({ unites, contentType = 'unite', styleKey =
   };
 
   const handleTextChange = (element, newText) => {
-    console.log(`Text change triggered for ${element}:`, newText);
+    // console.log(`Text change triggered for ${element}:`, newText);
     if (isValidText(newText)) {
       setTexts((prev) => {
         const newTexts = { ...prev, [element]: newText };
-        console.log(`Updated texts state:`, newTexts);
+        // console.log(`Updated texts state:`, newTexts);
         return newTexts;
       });
     } else {
@@ -309,7 +309,7 @@ export default function UnitStyleTwo({ unites, contentType = 'unite', styleKey =
   };
 
   const handleUnitStyleChange = (unitId, newStyles) => {
-    console.log(`Unit style change triggered for unitId ${unitId}:`, newStyles);
+    // console.log(`Unit style change triggered for unitId ${unitId}:`, newStyles);
     if (!unitId || unitId === 'undefined') {
       console.warn(`Invalid unitId: ${unitId}`);
       return;
@@ -325,12 +325,12 @@ export default function UnitStyleTwo({ unites, contentType = 'unite', styleKey =
   };
 
   const saveAllChanges = async () => {
-    console.log('saveAllChanges called');
-    console.log('userEntreprise:', userEntreprise);
-    console.log('positions:', positions);
-    console.log('styles:', styles);
-    console.log('texts:', texts);
-    console.log('pendingUnitStyles:', pendingUnitStyles);
+    // console.log('saveAllChanges called');
+    // console.log('userEntreprise:', userEntreprise);
+    // console.log('positions:', positions);
+    // console.log('styles:', styles);
+    // console.log('texts:', texts);
+    // console.log('pendingUnitStyles:', pendingUnitStyles);
 
     if (!userEntreprise) {
       toast.error("ID de l'entreprise manquant");
@@ -354,7 +354,7 @@ export default function UnitStyleTwo({ unites, contentType = 'unite', styleKey =
     }
 
     try {
-      console.log('Sending POST to http://localhost:5000/preferences/entreprise');
+      // console.log('Sending POST to http://localhost:5000/preferences/entreprise');
       const preferencesResponse = await axios.post(
         'http://localhost:5000/preferences/entreprise',
         {
@@ -373,13 +373,13 @@ export default function UnitStyleTwo({ unites, contentType = 'unite', styleKey =
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log('Preferences saved:', preferencesResponse.data);
+      // console.log('Preferences saved:', preferencesResponse.data);
 
       if (Object.keys(pendingUnitStyles).length > 0) {
-        console.log('Saving Unit styles');
+        // console.log('Saving Unit styles');
         for (const [unitId, unitStyles] of Object.entries(pendingUnitStyles)) {
           if (unitId && unitId !== 'undefined' && isValidStyle(unitStyles)) {
-            console.log(`Sending PATCH to http://localhost:5000/contenus/Unite/${unitId}/styles`);
+            // console.log(`Sending PATCH to http://localhost:5000/contenus/Unite/${unitId}/styles`);
             const unitResponse = await axios.patch(
               `http://localhost:5000/contenus/Unite/${unitId}/styles`,
               unitStyles,
@@ -387,7 +387,7 @@ export default function UnitStyleTwo({ unites, contentType = 'unite', styleKey =
                 headers: { Authorization: `Bearer ${token}` },
               }
             );
-            console.log(`Unit styles saved for ${unitId}:`, unitResponse.data);
+            // console.log(`Unit styles saved for ${unitId}:`, unitResponse.data);
           } else {
             console.warn(`Skipping invalid unitId or styles: ${unitId}`, unitStyles);
           }
@@ -411,10 +411,6 @@ export default function UnitStyleTwo({ unites, contentType = 'unite', styleKey =
 
   if (loading) {
     return <div>Chargement...</div>;
-  }
-
-  if (error) {
-    return <div>Erreur: {error}</div>;
   }
 
   return (

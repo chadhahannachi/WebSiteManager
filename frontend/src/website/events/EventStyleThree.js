@@ -1,27 +1,3 @@
-// import React from 'react';
-// import './LatestEvents.css';
-// import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-
-// export default function EventStyleThree({ events }) {
-//   return (
-//     <div className="events-container style-three">
-//       {events.map((event, index) => (
-//         <div className="event-item" key={index}>
-//           <img src={event.img} alt={event.title} className="event-image" />
-//           <div className="event-content">
-//             <h3>{event.title}</h3>
-//             <p>{event.desc}</p>
-//             <div className="event-date">
-//               <CalendarMonthIcon className="calendar-icon" />
-//               <span>{event.date}</span>
-//             </div>
-//           </div>
-//         </div>
-//       ))}
-//     </div>
-//   );
-// }
-
 import React, { useState, useEffect } from 'react';
 import './LatestEvents.css';
 import EditorText from '../aboutus/EditorText';
@@ -55,6 +31,7 @@ export default function EventStyleThree({ events, contentType = 'events', styleK
     sectionName: 'NOS ÉVÉNEMENTS',
   });
   const [pendingEventStyles, setPendingEventStyles] = useState({});
+  const [pendingEventPositions, setPendingEventPositions] = useState({});
   const [userEntreprise, setUserEntreprise] = useState(null);
 
   // Validation functions
@@ -199,10 +176,34 @@ export default function EventStyleThree({ events, contentType = 'events', styleK
   };
 
   const handleEventStyleChange = (eventId, newStyles) => {
+    console.log('handleEventStyleChange appelé:', { eventId, newStyles });
+    
     if (eventId && isValidStyle(newStyles)) {
-      setPendingEventStyles((prev) => ({
+      setPendingEventStyles((prev) => {
+        const existingStyles = prev[eventId] || {};
+        const mergedStyles = {
+          ...existingStyles,
+          ...newStyles,
+          title: { ...existingStyles.title, ...newStyles.title },
+          description: { ...existingStyles.description, ...newStyles.description },
+          date: { ...existingStyles.date, ...newStyles.date },
+        };
+        
+        console.log(`Styles fusionnés pour l'événement ${eventId}:`, mergedStyles);
+        
+        return {
+          ...prev,
+          [eventId]: mergedStyles,
+        };
+      });
+    }
+  };
+
+  const handleEventPositionChange = (eventId, newPositions) => {
+    if (eventId && newPositions && typeof newPositions === 'object') {
+      setPendingEventPositions((prev) => ({
         ...prev,
-        [eventId]: newStyles,
+        [eventId]: newPositions,
       }));
     }
   };
@@ -246,17 +247,40 @@ export default function EventStyleThree({ events, contentType = 'events', styleK
 
       for (const [eventId, eventStyles] of Object.entries(pendingEventStyles)) {
         if (eventId && isValidStyle(eventStyles)) {
-          await axios.patch(
-            `http://localhost:5000/contenus/events/${eventId}/styles`,
-            eventStyles,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
+          try {
+            await axios.patch(
+              `http://localhost:5000/contenus/Evenement/${eventId}/styles`,
+              eventStyles,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+          } catch (error) {
+            console.error(`Failed to save styles for event ${eventId}:`, error.response?.status, error.response?.data);
+            toast.error(`Erreur lors de la sauvegarde des styles pour l'événement ${eventId}`);
+          }
+        }
+      }
+
+      for (const [eventId, eventPositions] of Object.entries(pendingEventPositions)) {
+        if (eventId && eventPositions) {
+          try {
+            await axios.patch(
+              `http://localhost:5000/contenus/Evenement/${eventId}`,
+              { positions: eventPositions },
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+          } catch (error) {
+            console.error(`Failed to save positions for event ${eventId}:`, error.response?.status, error.response?.data);
+            toast.error(`Erreur lors de la sauvegarde des positions pour l'événement ${eventId}`);
+          }
         }
       }
 
       setPendingEventStyles({});
+      setPendingEventPositions({});
       toast.success('Modifications sauvegardées avec succès');
     } catch (error) {
       console.error('Error saving changes:', error);
@@ -299,7 +323,8 @@ export default function EventStyleThree({ events, contentType = 'events', styleK
           initialStyles={styles.eventGrid}
           onSelect={setSelectedElement}
           onPositionChange={(newPosition) => handlePositionChange('eventGrid', newPosition)}
-          onUpdate={handleEventStyleChange}
+          onStyleChange={handleEventStyleChange}
+          onUpdate={handleEventPositionChange}
         />
         <button onClick={saveAllChanges}>Enregistrer les modifications</button>
       </div>

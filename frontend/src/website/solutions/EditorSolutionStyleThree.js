@@ -6,36 +6,66 @@ import { jwtDecode } from 'jwt-decode';
 
 const API_URL = 'http://localhost:5000/couleurs';
 
-export default function EditorSolutionGrid({ solutions = [], initialPosition = { top: 0, left: 0 }, initialStyles = { width: 1200, minHeight: 440 }, onSelect, onPositionChange, onUpdate, onStyleChange }) {
+const DESCRIPTION_LIMIT = 50;
+
+export default function EditorSolutionStyleThree({ solutions = [], initialPosition = { top: 0, left: 0 }, initialStyles = { width: 1600, minHeight: 400 }, onSelect, onPositionChange, onUpdate, onStyleChange }) {
   const [position, setPosition] = useState({
     top: initialPosition.top || 0,
     left: initialPosition.left || 0,
   });
   const [gridStyles, setGridStyles] = useState({
-    width: parseFloat(initialStyles.width) || 1200,
-    minHeight: parseFloat(initialStyles.minHeight) || 440,
+    width: parseFloat(initialStyles.width) || 1600,
+    minHeight: parseFloat(initialStyles.minHeight) || 400,
   });
   const [cardStyles, setCardStyles] = useState({
     card: {
-      backgroundColor: initialStyles.card?.backgroundColor || '#ffffff',
-      hoverBackgroundColor: initialStyles.card?.hoverBackgroundColor || '#f8f9fa',
-      borderRadius: initialStyles.card?.borderRadius || '8px',
-    },
-    number: {
-      color: initialStyles.number?.color || '#333333',
-      fontSize: initialStyles.number?.fontSize || '24px',
+      backgroundColor: '#ffffff',
+      borderRadius: '10px',
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+      width: '300px',
+      height: '350px',
+      padding: '20px',
+      transition: 'all 0.3s ease',
+      hoverBackgroundColor: '#f8f9fa',
+      hoverTransform: 'translateY(-5px)',
+      hoverBoxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
     },
     title: {
-      color: initialStyles.title?.color || '#333333',
-      fontSize: initialStyles.title?.fontSize || '18px',
-      fontFamily: initialStyles.title?.fontFamily || 'Arial',
-      textAlign: initialStyles.title?.textAlign || 'left',
+      color: '#014268',
+      fontSize: '18px',
+      fontFamily: 'Arial',
+      fontWeight: '600',
+      textAlign: 'left',
+      fontStyle: 'normal',
+      textDecoration: 'none',
+      marginBottom: '10px',
     },
     description: {
-      color: initialStyles.description?.color || '#666666',
-      fontSize: initialStyles.description?.fontSize || '14px',
-      fontFamily: initialStyles.description?.fontFamily || 'Arial',
-      textAlign: initialStyles.description?.textAlign || 'left',
+      color: '#555',
+      fontSize: '14px',
+      fontFamily: 'Arial',
+      textAlign: 'left',
+      fontWeight: 'normal',
+      fontStyle: 'normal',
+      textDecoration: 'none',
+      lineHeight: '1.5',
+      margin: 0,
+    },
+    image: {
+      borderRadius: '8px',
+      width: '100%',
+      height: '150px',
+      objectFit: 'contain',
+      marginBottom: '15px',
+      transition: 'opacity 0.3s ease',
+    },
+    readMore: {
+      color: '#2196f3',
+      fontSize: '14px',
+      fontFamily: 'Arial',
+      fontWeight: 'normal',
+      textDecoration: 'none',
+      cursor: 'pointer',
     },
   });
   const [solutionData, setSolutionData] = useState([]);
@@ -44,18 +74,14 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
   const [isEditingStyles, setIsEditingStyles] = useState(false);
   const [isSelected, setIsSelected] = useState(false);
   const [resizing, setResizing] = useState(null);
-  // const [editingSolutionIndex, setEditingSolutionIndex] = useState(null);
-  // const [editingField, setEditingField] = useState(null);
   const [draggingElement, setDraggingElement] = useState(null);
+  const [hoveredIndex, setHoveredIndex] = useState(null);
   const offset = useRef({ x: 0, y: 0 });
-  // const inputRef = useRef(null);
+
   const [colors, setColors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userEntreprise, setUserEntreprise] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const saveTimeoutRef = useRef(null);
-  const pendingStyles = useRef({});
 
   // Fetch user enterprise
   useEffect(() => {
@@ -88,8 +114,7 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
         setLoading(false);
       }
     } else {
-      console.error('Token is missing from localStorage.');
-      setError('Token manquant. Veuillez vous connecter.');
+      console.log('Token is missing from localStorage, continuing without authentication');
       setLoading(false);
     }
   }, []);
@@ -111,103 +136,32 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
     }
   }, [userEntreprise]);
 
-  // Fonction pour sauvegarder les styles dans la base de données avec debounce
-  const saveSolutionStyles = (solutionId, styles) => {
-    if (!solutionId || !userEntreprise) {
-      console.warn('ID de solution ou entreprise manquant pour la sauvegarde');
-      return;
-    }
-
-    // Annuler le timeout précédent s'il existe
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-
-    setIsSaving(true);
-
-    // Créer un nouveau timeout pour la sauvegarde
-    saveTimeoutRef.current = setTimeout(async () => {
-      try {
-        const token = localStorage.getItem('token');
-
-        await axios.patch(
-          `http://localhost:5000/contenus/Solution/${solutionId}/styles`,
-          styles,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        console.log('Styles sauvegardés avec succès pour la solution:', solutionId);
-      } catch (error) {
-        console.error('Erreur lors de la sauvegarde des styles:', error);
-        setError('Erreur lors de la sauvegarde des styles');
-      } finally {
-        setIsSaving(false);
-      }
-    }, 1000); // Délai de 1 seconde
-  };
-
-  // Fonction pour sauvegarder le contenu d'une solution
-  const saveSolutionContent = async (solutionId, field, value) => {
-    if (!solutionId || !userEntreprise) {
-      console.warn('ID de solution ou entreprise manquant pour la sauvegarde');
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem('token');
-
-      await axios.patch(
-        `http://localhost:5000/contenus/Solution/${solutionId}`,
-        { [field]: value },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      console.log(`${field} sauvegardé avec succès pour la solution:`, solutionId);
-    } catch (error) {
-      console.error(`Erreur lors de la sauvegarde du ${field}:`, error);
-      setError(`Erreur lors de la sauvegarde du ${field}`);
-    }
-  };
-
   useEffect(() => {
-    console.log('EditorSolutionGrid received solutions:', solutions);
-    console.log('Solutions with id:', solutions.filter(s => s.id).map(s => ({ id: s.id, title: s.title })));
-    
-    setSolutionData(solutions.map((solution) => ({
-      ...solution,
-      positions: {
-        number: { top: 20, left: 20 },
-        title: { top: 80, left: 20 },
-        description: { top: 110, left: 20 },
-      },
-      styles: solution.styles || {
-        card: {
-          backgroundColor: cardStyles.card.backgroundColor,
-          hoverBackgroundColor: cardStyles.card.hoverBackgroundColor,
-          borderRadius: cardStyles.card.borderRadius,
-        },
-        number: {
-          color: cardStyles.number.color,
-          fontSize: cardStyles.number.fontSize,
-        },
-        title: {
-          color: cardStyles.title.color,
-          fontSize: cardStyles.title.fontSize,
-          fontFamily: cardStyles.title.fontFamily,
-          textAlign: cardStyles.title.textAlign,
-        },
-        description: {
-          color: cardStyles.description.color,
-          fontSize: cardStyles.description.fontSize,
-          fontFamily: cardStyles.description.fontFamily,
-          textAlign: cardStyles.description.textAlign,
-        },
-      },
-    })));
+    if (solutions && solutions.length > 0) {
+      setSolutionData(solutions.map((solution, index) => {
+        // Fusionner les styles sauvegardés avec les styles par défaut
+        const mergedStyles = {
+          card: { ...cardStyles.card, ...solution.styles?.card },
+          title: { ...cardStyles.title, ...solution.styles?.title },
+          description: { ...cardStyles.description, ...solution.styles?.description },
+          image: { ...cardStyles.image, ...solution.styles?.image },
+          readMore: { ...cardStyles.readMore, ...solution.styles?.readMore },
+        };
+
+        return {
+          ...solution,
+          id: solution.id || `temp-${index}`, // Assurer qu'il y a toujours un ID
+          positions: solution.positions || {
+            image: { top: 20, left: 20 },
+            title: { top: 20, left: 100 },
+            description: { top: 50, left: 100 },
+          },
+          styles: mergedStyles,
+        };
+      }));
+    } else {
+      setSolutionData([]);
+    }
   }, [solutions, cardStyles]);
 
   useEffect(() => {
@@ -221,18 +175,8 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
-      // Nettoyer le timeout de sauvegarde
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
     };
   }, [isDragging, resizing, draggingElement]);
-
-  // useEffect(() => {
-  //   if (editingSolutionIndex !== null && inputRef.current) {
-  //     inputRef.current.focus();
-  //   }
-  // }, [editingSolutionIndex, editingField]);
 
   const handleMouseDown = (e) => {
     e.stopPropagation();
@@ -247,9 +191,12 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
     e.stopPropagation();
     const card = e.currentTarget.closest('.solution-card');
     const rect = card.getBoundingClientRect();
+    const currentPositions = solutionData[solutionIndex]?.positions || {};
+    const elementPositions = currentPositions[element] || { top: 0, left: 0 };
+    
     offset.current = {
-      x: e.clientX - rect.left - solutionData[solutionIndex].positions[element].left,
-      y: e.clientY - rect.top - solutionData[solutionIndex].positions[element].top,
+      x: e.clientX - rect.left - elementPositions.left,
+      y: e.clientY - rect.top - elementPositions.top,
     };
     setDraggingElement({ solutionIndex, element });
   };
@@ -284,11 +231,14 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
       requestAnimationFrame(() => {
         const { solutionIndex, element } = draggingElement;
         const card = document.getElementsByClassName('solution-card')[solutionIndex];
+        if (!card) return;
+        
         const rect = card.getBoundingClientRect();
-        const cardWidth = parseInt(cardStyles.card.width);
-        const cardHeight = 300; // Approximate height, adjust if needed
-        const elementWidth = element === 'number' ? 50 : cardWidth - 40; // Approximate width for number
-        const elementHeight = element === 'number' ? 50 : (element === 'title' ? 30 : 60);
+        const solution = solutionData[solutionIndex];
+        const cardWidth = parseInt(solution?.styles?.card?.width || cardStyles.card.width);
+        const cardHeight = parseInt(solution?.styles?.card?.height || cardStyles.card.height);
+        const elementWidth = parseInt(solution?.styles?.[element]?.width || (element === 'title' || element === 'description' ? cardWidth - 120 : 60));
+        const elementHeight = parseInt(solution?.styles?.[element]?.height || (element === 'title' ? 30 : element === 'description' ? 60 : 60));
 
         let newLeft = e.clientX - rect.left - offset.current.x;
         let newTop = e.clientY - rect.top - offset.current.y;
@@ -297,25 +247,30 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
         newTop = Math.max(0, Math.min(newTop, cardHeight - elementHeight));
 
         setSolutionData((prev) => {
-          const newSolutions = [...prev];
-          newSolutions[solutionIndex] = {
-            ...newSolutions[solutionIndex],
-            positions: {
-              ...newSolutions[solutionIndex].positions,
-              [element]: { top: newTop, left: newLeft },
-            },
-          };
-          if (newSolutions[solutionIndex].id) {
-            setPendingChanges((prev) => ({
-              ...prev,
-              [newSolutions[solutionIndex].id]: {
-                ...prev[newSolutions[solutionIndex].id],
-                positions: newSolutions[solutionIndex].positions,
+          try {
+            const newSolutions = [...prev];
+            newSolutions[solutionIndex] = {
+              ...newSolutions[solutionIndex],
+              positions: {
+                ...newSolutions[solutionIndex].positions,
+                [element]: { top: newTop, left: newLeft },
               },
-            }));
-            onUpdate?.(newSolutions[solutionIndex].id, { positions: newSolutions[solutionIndex].positions });
+            };
+            if (newSolutions[solutionIndex].id && !newSolutions[solutionIndex].id.startsWith('temp-')) {
+              setPendingChanges((prev) => ({
+                ...prev,
+                [newSolutions[solutionIndex].id]: {
+                  ...prev[newSolutions[solutionIndex].id],
+                  positions: newSolutions[solutionIndex].positions,
+                },
+              }));
+              onUpdate?.(newSolutions[solutionIndex].id, { positions: newSolutions[solutionIndex].positions });
+            }
+            return newSolutions;
+          } catch (error) {
+            console.error('Error updating solution positions:', error);
+            return prev;
           }
-          return newSolutions;
         });
       });
     }
@@ -344,70 +299,62 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
     onSelect?.('solutionGrid');
   };
 
-  
-
-  const handleStyleChange = (property, value, subProperty, solutionIndex) => {
-    console.log(`handleStyleChange called with:`, { property, value, subProperty, solutionIndex });
-    console.log('Current solutionData:', solutionData);
-    
-    setCardStyles((prev) => {
-      const newStyles = {
-        ...prev,
-        [subProperty]: {
-          ...prev[subProperty],
-          [property]: value,
-        },
-      };
-
-      // Appliquer les styles à toutes les solutions
+  const handleImageChange = (index, file) => {
+    const reader = new FileReader();
+    reader.onload = () => {
       setSolutionData((prev) => {
         const newSolutions = [...prev];
-        console.log('Applying styles to solutions:', newSolutions.length);
-        
-        newSolutions.forEach((solution, index) => {
-          console.log(`Processing solution ${index}:`, solution);
-          if (!solution.styles) {
-            solution.styles = {
-              card: {},
-              number: {},
-              title: {},
-              description: {},
-            };
-          }
-          if (!solution.styles[subProperty]) {
-            solution.styles[subProperty] = {};
-          }
-          solution.styles[subProperty][property] = value;
-          console.log(`Updated solution ${index} styles:`, solution.styles);
-        });
-
-        // Notifier le changement de style pour chaque solution
-        newSolutions.forEach((solution, index) => {
-          console.log(`Checking solution ${index} for id:`, solution.id);
-          if (solution.id) {
-            console.log(`Storing styles for solution ${solution.id}:`, solution.styles);
-            pendingStyles.current[solution.id] = solution.styles;
-            if (onStyleChange) {
-              console.log(`Calling onStyleChange for ${solution.id}`);
-              onStyleChange(solution.id, solution.styles);
-            }
-          } else {
-            console.warn(`Solution ${index} has no id:`, solution);
-          }
-        });
-
+        newSolutions[index] = { ...newSolutions[index], img: reader.result };
+        if (newSolutions[index].id) {
+          setPendingChanges((prev) => ({
+            ...prev,
+            [newSolutions[index].id]: {
+              ...prev[newSolutions[index].id],
+              img: reader.result,
+            },
+          }));
+          onUpdate?.(newSolutions[index].id, { img: reader.result });
+        }
         return newSolutions;
       });
+    };
+    reader.readAsDataURL(file);
+  };
 
-      return newStyles;
-    });
+  const handleStyleChange = (property, value, subProperty) => {
+    try {
+      setSolutionData((prevSolutions) => {
+        const newSolutions = prevSolutions.map((solution) => {
+          const updatedStyles = {
+            ...solution.styles,
+            [subProperty]: {
+              ...solution.styles[subProperty],
+              [property]: value,
+            },
+          };
+          
+          if (solution.id && !solution.id.startsWith('temp-')) {
+            onStyleChange?.(solution.id, updatedStyles);
+          }
+          
+          return {
+            ...solution,
+            styles: updatedStyles,
+          };
+        });
+        
+        return newSolutions;
+      });
+    } catch (error) {
+      console.error('Error in handleStyleChange:', error);
+    }
   };
 
   const toggleTextStyle = (property, subProperty, value, defaultValue) => {
-    const currentValue = solutionData[0]?.styles?.[subProperty]?.[property] || cardStyles[subProperty][property] || defaultValue;
-    handleStyleChange(property, currentValue === value ? defaultValue : value, subProperty, 0);
+    const firstSolution = solutionData[0];
+    const currentValue = firstSolution?.styles?.[subProperty]?.[property] || defaultValue;
+    handleStyleChange(property, currentValue === value ? defaultValue : value, subProperty);
   };
-
 
   const renderControlButtons = () => {
     if (!isSelected) return null;
@@ -417,7 +364,7 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
         style={{
           position: 'absolute',
           top: position.top - 40,
-          left: position.left,
+          left: position.left - 30,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -491,7 +438,20 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
   };
 
   if (!solutionData.length) {
-    return <div>Loading solutions...</div>;
+    return (
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <p>Chargement des solutions...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center', color: 'red' }}>
+        <p>Erreur: {error}</p>
+        <p>Le composant continuera de fonctionner sans les fonctionnalités d'authentification.</p>
+      </div>
+    );
   }
 
   return (
@@ -535,14 +495,7 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
             <FontAwesomeIcon icon={faTimes} />
           </button>
           <div className="style-controls">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <h3>Edit Solution Grid Style</h3>
-              {isSaving && (
-                <span style={{ color: '#007bff', fontSize: '12px' }}>
-                  Sauvegarde en cours...
-                </span>
-              )}
-            </div>
+            <h3>Edit Solution Style Three</h3>
             <h3>Card Styles</h3>
             <div>
               <label>Background Color: </label>
@@ -564,8 +517,8 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
                 >
                   {colors.map((c) => (
                     <div
-                      key={c.id}
-                      onClick={() => handleStyleChange('backgroundColor', c.couleur, 'card', 0)}
+                      key={c._id}
+                      onClick={() => handleStyleChange('backgroundColor', c.couleur, 'card')}
                       style={{
                         width: '20px',
                         height: '20px',
@@ -583,7 +536,7 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
               <input
                 type="color"
                 value={solutionData[0]?.styles?.card?.backgroundColor || cardStyles.card.backgroundColor}
-                onChange={(e) => handleStyleChange('backgroundColor', e.target.value, 'card', 0)}
+                onChange={(e) => handleStyleChange('backgroundColor', e.target.value, 'card')}
               />
             </div>
             <div>
@@ -606,8 +559,8 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
                 >
                   {colors.map((c) => (
                     <div
-                      key={c.id}
-                      onClick={() => handleStyleChange('hoverBackgroundColor', c.couleur, 'card', 0)}
+                      key={c._id}
+                      onClick={() => handleStyleChange('hoverBackgroundColor', c.couleur, 'card')}
                       style={{
                         width: '20px',
                         height: '20px',
@@ -625,7 +578,25 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
               <input
                 type="color"
                 value={solutionData[0]?.styles?.card?.hoverBackgroundColor || cardStyles.card.hoverBackgroundColor}
-                onChange={(e) => handleStyleChange('hoverBackgroundColor', e.target.value, 'card', 0)}
+                onChange={(e) => handleStyleChange('hoverBackgroundColor', e.target.value, 'card')}
+              />
+            </div>
+            <div>
+              <label>Hover Box Shadow: </label>
+              <input
+                type="text"
+                value={solutionData[0]?.styles?.card?.hoverBoxShadow || cardStyles.card.hoverBoxShadow}
+                onChange={(e) => handleStyleChange('hoverBoxShadow', e.target.value, 'card')}
+                placeholder="0 8px 16px rgba(0, 0, 0, 0.2)"
+              />
+            </div>
+            <div>
+              <label>Hover Transform: </label>
+              <input
+                type="text"
+                value={solutionData[0]?.styles?.card?.hoverTransform || cardStyles.card.hoverTransform}
+                onChange={(e) => handleStyleChange('hoverTransform', e.target.value, 'card')}
+                placeholder="translateY(-5px)"
               />
             </div>
             <div>
@@ -635,61 +606,25 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
                 min="0"
                 max="50"
                 value={parseInt(solutionData[0]?.styles?.card?.borderRadius || cardStyles.card.borderRadius)}
-                onChange={(e) => handleStyleChange('borderRadius', `${e.target.value}px`, 'card', 0)}
-              />
-            </div>
-            <h3>Number Style</h3>
-            <div>
-              <label>Color: </label>
-              {loading ? (
-                <span>Chargement des couleurs...</span>
-              ) : error ? (
-                <span style={{ color: 'red' }}>{error}</span>
-              ) : colors.length === 0 ? (
-                <span>Aucune couleur disponible.</span>
-              ) : (
-                <div
-                  style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '8px',
-                    marginLeft: '10px',
-                    marginTop: '5px',
-                  }}
-                >
-                  {colors.map((c) => (
-                    <div
-                      key={c.id}
-                      onClick={() => handleStyleChange('color', c.couleur, 'number', 0)}
-                      style={{
-                        width: '20px',
-                        height: '20px',
-                        backgroundColor: c.couleur,
-                        border: (solutionData[0]?.styles?.number?.color || cardStyles.number.color) === c.couleur ? '2px solid #000' : '1px solid #ccc',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        transition: 'border 0.2s ease',
-                      }}
-                      title={c.couleur}
-                    />
-                  ))}
-                </div>
-              )}
-              <input
-                type="color"
-                value={solutionData[0]?.styles?.number?.color || cardStyles.number.color}
-                onChange={(e) => handleStyleChange('color', e.target.value, 'number', 0)}
+                onChange={(e) => handleStyleChange('borderRadius', `${e.target.value}px`, 'card')}
               />
             </div>
             <div>
-              <label>Font Size: </label>
+              <label>Card Width: </label>
               <input
-                type="range"
-                min="20"
-                max="100"
-                step="1"
-                value={parseInt(solutionData[0]?.styles?.number?.fontSize || cardStyles.number.fontSize)}
-                onChange={(e) => handleStyleChange('fontSize', `${e.target.value}px`, 'number', 0)}
+                type="number"
+                min="200"
+                value={parseInt(solutionData[0]?.styles?.card?.width || cardStyles.card.width)}
+                onChange={(e) => handleStyleChange('width', `${e.target.value}px`, 'card')}
+              />
+            </div>
+            <div>
+              <label>Card Height: </label>
+              <input
+                type="number"
+                min="150"
+                value={parseInt(solutionData[0]?.styles?.card?.height || cardStyles.card.height)}
+                onChange={(e) => handleStyleChange('height', `${e.target.value}px`, 'card')}
               />
             </div>
             <h3>Title Text Style</h3>
@@ -713,8 +648,8 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
                 >
                   {colors.map((c) => (
                     <div
-                      key={c.id}
-                      onClick={() => handleStyleChange('color', c.couleur, 'title', 0)}
+                      key={c._id}
+                      onClick={() => handleStyleChange('color', c.couleur, 'title')}
                       style={{
                         width: '20px',
                         height: '20px',
@@ -732,7 +667,7 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
               <input
                 type="color"
                 value={solutionData[0]?.styles?.title?.color || cardStyles.title.color}
-                onChange={(e) => handleStyleChange('color', e.target.value, 'title', 0)}
+                onChange={(e) => handleStyleChange('color', e.target.value, 'title')}
               />
             </div>
             <div>
@@ -743,14 +678,14 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
                 max="50"
                 step="1"
                 value={parseInt(solutionData[0]?.styles?.title?.fontSize || cardStyles.title.fontSize)}
-                onChange={(e) => handleStyleChange('fontSize', `${e.target.value}px`, 'title', 0)}
+                onChange={(e) => handleStyleChange('fontSize', `${e.target.value}px`, 'title')}
               />
             </div>
             <div>
               <label>Font Family: </label>
               <select
                 value={solutionData[0]?.styles?.title?.fontFamily || cardStyles.title.fontFamily}
-                onChange={(e) => handleStyleChange('fontFamily', e.target.value, 'title', 0)}
+                onChange={(e) => handleStyleChange('fontFamily', e.target.value, 'title')}
               >
                 <option value="Arial">Arial</option>
                 <option value="Times New Roman">Times New Roman</option>
@@ -769,7 +704,7 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
               <label>Text Align: </label>
               <select
                 value={solutionData[0]?.styles?.title?.textAlign || cardStyles.title.textAlign}
-                onChange={(e) => handleStyleChange('textAlign', e.target.value, 'title', 0)}
+                onChange={(e) => handleStyleChange('textAlign', e.target.value, 'title')}
               >
                 <option value="left">Left</option>
                 <option value="center">Center</option>
@@ -782,7 +717,7 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
                 onClick={() => toggleTextStyle('fontWeight', 'title', '700', 'normal')}
                 style={{
                   padding: '5px 10px',
-                  backgroundColor: solutionData[0]?.styles?.title?.fontWeight === '700' ? '#ccc' : '#fff',
+                  backgroundColor: (solutionData[0]?.styles?.title?.fontWeight || cardStyles.title.fontWeight) === '700' ? '#ccc' : '#fff',
                   border: '1px solid #ccc',
                   borderRadius: '4px',
                   cursor: 'pointer',
@@ -794,7 +729,7 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
                 onClick={() => toggleTextStyle('fontStyle', 'title', 'italic', 'normal')}
                 style={{
                   padding: '5px 10px',
-                  backgroundColor: solutionData[0]?.styles?.title?.fontStyle === 'italic' ? '#ccc' : '#fff',
+                  backgroundColor: (solutionData[0]?.styles?.title?.fontStyle || cardStyles.title.fontStyle) === 'italic' ? '#ccc' : '#fff',
                   border: '1px solid #ccc',
                   borderRadius: '4px',
                   cursor: 'pointer',
@@ -806,7 +741,7 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
                 onClick={() => toggleTextStyle('textDecoration', 'title', 'underline', 'none')}
                 style={{
                   padding: '5px 10px',
-                  backgroundColor: solutionData[0]?.styles?.title?.textDecoration === 'underline' ? '#ccc' : '#fff',
+                  backgroundColor: (solutionData[0]?.styles?.title?.textDecoration || cardStyles.title.textDecoration) === 'underline' ? '#ccc' : '#fff',
                   border: '1px solid #ccc',
                   borderRadius: '4px',
                   cursor: 'pointer',
@@ -836,8 +771,8 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
                 >
                   {colors.map((c) => (
                     <div
-                      key={c.id}
-                      onClick={() => handleStyleChange('color', c.couleur, 'description', 0)}
+                      key={c._id}
+                      onClick={() => handleStyleChange('color', c.couleur, 'description')}
                       style={{
                         width: '20px',
                         height: '20px',
@@ -855,7 +790,7 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
               <input
                 type="color"
                 value={solutionData[0]?.styles?.description?.color || cardStyles.description.color}
-                onChange={(e) => handleStyleChange('color', e.target.value, 'description', 0)}
+                onChange={(e) => handleStyleChange('color', e.target.value, 'description')}
               />
             </div>
             <div>
@@ -866,14 +801,14 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
                 max="50"
                 step="1"
                 value={parseInt(solutionData[0]?.styles?.description?.fontSize || cardStyles.description.fontSize)}
-                onChange={(e) => handleStyleChange('fontSize', `${e.target.value}px`, 'description', 0)}
+                onChange={(e) => handleStyleChange('fontSize', `${e.target.value}px`, 'description')}
               />
             </div>
             <div>
               <label>Font Family: </label>
               <select
                 value={solutionData[0]?.styles?.description?.fontFamily || cardStyles.description.fontFamily}
-                onChange={(e) => handleStyleChange('fontFamily', e.target.value, 'description', 0)}
+                onChange={(e) => handleStyleChange('fontFamily', e.target.value, 'description')}
               >
                 <option value="Arial">Arial</option>
                 <option value="Times New Roman">Times New Roman</option>
@@ -892,7 +827,7 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
               <label>Text Align: </label>
               <select
                 value={solutionData[0]?.styles?.description?.textAlign || cardStyles.description.textAlign}
-                onChange={(e) => handleStyleChange('textAlign', e.target.value, 'description', 0)}
+                onChange={(e) => handleStyleChange('textAlign', e.target.value, 'description')}
               >
                 <option value="left">Left</option>
                 <option value="center">Center</option>
@@ -905,7 +840,7 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
                 onClick={() => toggleTextStyle('fontWeight', 'description', '700', 'normal')}
                 style={{
                   padding: '5px 10px',
-                  backgroundColor: solutionData[0]?.styles?.description?.fontWeight === '700' ? '#ccc' : '#fff',
+                  backgroundColor: (solutionData[0]?.styles?.description?.fontWeight || cardStyles.description.fontWeight) === '700' ? '#ccc' : '#fff',
                   border: '1px solid #ccc',
                   borderRadius: '4px',
                   cursor: 'pointer',
@@ -917,7 +852,7 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
                 onClick={() => toggleTextStyle('fontStyle', 'description', 'italic', 'normal')}
                 style={{
                   padding: '5px 10px',
-                  backgroundColor: solutionData[0]?.styles?.description?.fontStyle === 'italic' ? '#ccc' : '#fff',
+                  backgroundColor: (solutionData[0]?.styles?.description?.fontStyle || cardStyles.description.fontStyle) === 'italic' ? '#ccc' : '#fff',
                   border: '1px solid #ccc',
                   borderRadius: '4px',
                   cursor: 'pointer',
@@ -929,7 +864,7 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
                 onClick={() => toggleTextStyle('textDecoration', 'description', 'underline', 'none')}
                 style={{
                   padding: '5px 10px',
-                  backgroundColor: solutionData[0]?.styles?.description?.textDecoration === 'underline' ? '#ccc' : '#fff',
+                  backgroundColor: (solutionData[0]?.styles?.description?.textDecoration || cardStyles.description.textDecoration) === 'underline' ? '#ccc' : '#fff',
                   border: '1px solid #ccc',
                   borderRadius: '4px',
                   cursor: 'pointer',
@@ -937,6 +872,89 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
               >
                 <u>U</u>
               </button>
+            </div>
+            <h3>Image Style</h3>
+            <div>
+              <label>Border Radius: </label>
+              <input
+                type="range"
+                min="0"
+                max="50"
+                value={parseInt(solutionData[0]?.styles?.image?.borderRadius || cardStyles.image.borderRadius)}
+                onChange={(e) => handleStyleChange('borderRadius', `${e.target.value}px`, 'image')}
+              />
+            </div>
+            <div>
+              <label>Width: </label>
+              <input
+                type="number"
+                min="20"
+                value={parseInt(solutionData[0]?.styles?.image?.width || cardStyles.image.width)}
+                onChange={(e) => handleStyleChange('width', `${e.target.value}px`, 'image')}
+              />
+            </div>
+            <div>
+              <label>Height: </label>
+              <input
+                type="number"
+                min="20"
+                value={parseInt(solutionData[0]?.styles?.image?.height || cardStyles.image.height)}
+                onChange={(e) => handleStyleChange('height', `${e.target.value}px`, 'image')}
+              />
+            </div>
+            <h3>Read More Style</h3>
+            <div>
+              <label>Color: </label>
+              {loading ? (
+                <span>Chargement des couleurs...</span>
+              ) : error ? (
+                <span style={{ color: 'red' }}>{error}</span>
+              ) : colors.length === 0 ? (
+                <span>Aucune couleur disponible.</span>
+              ) : (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    marginLeft: '10px',
+                    marginTop: '5px',
+                  }}
+                >
+                  {colors.map((c) => (
+                    <div
+                      key={c._id}
+                      onClick={() => handleStyleChange('color', c.couleur, 'readMore')}
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: c.couleur,
+                        border: (solutionData[0]?.styles?.readMore?.color || cardStyles.readMore.color) === c.couleur ? '2px solid #000' : '1px solid #ccc',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'border 0.2s ease',
+                      }}
+                      title={c.couleur}
+                    />
+                  ))}
+                </div>
+              )}
+              <input
+                type="color"
+                value={solutionData[0]?.styles?.readMore?.color || cardStyles.readMore.color}
+                onChange={(e) => handleStyleChange('color', e.target.value, 'readMore')}
+              />
+            </div>
+            <div>
+              <label>Font Size: </label>
+              <input
+                type="range"
+                min="10"
+                max="30"
+                step="1"
+                value={parseInt(solutionData[0]?.styles?.readMore?.fontSize || cardStyles.readMore.fontSize)}
+                onChange={(e) => handleStyleChange('fontSize', `${e.target.value}px`, 'readMore')}
+              />
             </div>
             <h3>Grid Styles</h3>
             <div>
@@ -961,7 +979,7 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
         </div>
       )}
       <div
-        className="solutions-container style-one"
+        className="solutions-container style-three"
         style={{
           position: 'absolute',
           top: position.top,
@@ -970,155 +988,168 @@ export default function EditorSolutionGrid({ solutions = [], initialPosition = {
           minHeight: gridStyles.minHeight,
           display: 'flex',
           flexWrap: 'wrap',
-          gap: '30px',
-          padding: '10px 20px',
+          gap: '20px',
+          padding: '0 20px',
+          justifyContent: 'center',
         }}
         onClick={handleElementClick}
       >
-        {solutionData.map((solution, index) => (
-          <div
-            key={solution.id || index}
-            className="solution-card"
-            style={{
-              backgroundColor: solution.styles?.card?.backgroundColor || cardStyles.card.backgroundColor,
-              hoverBackgroundColor: solution.styles?.card?.hoverBackgroundColor || cardStyles.card.hoverBackgroundColor,
-              borderRadius: solution.styles?.card?.borderRadius || cardStyles.card.borderRadius,
-              padding: '30px 25px',
-              position: 'relative',
-              overflow: 'hidden',
-              transition: 'background-color 0.3s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = solution.styles?.card?.hoverBackgroundColor || cardStyles.card.hoverBackgroundColor;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = solution.styles?.card?.backgroundColor || cardStyles.card.backgroundColor;
-            }}
-          >
+        {solutionData.map((solution, index) => {
+          const isHovered = hoveredIndex === index;
+          const description = solution.description || '';
+          const isDescriptionLong = description.length > DESCRIPTION_LIMIT;
+          const truncatedDescription =
+            isDescriptionLong && !isHovered
+              ? `${description.substring(0, DESCRIPTION_LIMIT)}...`
+              : description;
+
+          return (
             <div
-              className="draggable-element solution-number"
+              key={solution.id || index}
+              className="solution-card"
               style={{
-                position: 'absolute',
-                top: solution.positions.number.top,
-                left: solution.positions.number.left,
-                cursor: isSelected ? 'move' : 'default',
-                color: solution.styles?.number?.color || cardStyles.number.color,
-                fontSize: solution.styles?.number?.fontSize || cardStyles.number.fontSize,
+                ...solution.styles?.card,
+                position: 'relative',
+                overflow: 'hidden',
+                transition: 'all 0.3s ease',
+                transform: isHovered ? (solution.styles?.card?.hoverTransform || cardStyles.card.hoverTransform) : 'translateY(0)',
+                boxShadow: isHovered ? (solution.styles?.card?.hoverBoxShadow || cardStyles.card.hoverBoxShadow) : (solution.styles?.card?.boxShadow || cardStyles.card.boxShadow),
+                backgroundColor: isHovered ? (solution.styles?.card?.hoverBackgroundColor || cardStyles.card.hoverBackgroundColor) : (solution.styles?.card?.backgroundColor || cardStyles.card.backgroundColor),
               }}
+              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(null)}
             >
-              {isSelected && (
-                <div
-                  className="drag-handle"
-                  onMouseDown={(e) => handleElementDragStart(e, index, 'number')}
+              <div
+                className="draggable-element"
+                style={{
+                  position: 'absolute',
+                  top: solution.positions?.image?.top || 20,
+                  left: solution.positions?.image?.left || 20,
+                  cursor: isSelected ? 'move' : 'default',
+                  width: '100%',
+                }}
+              >
+                {isSelected && (
+                  <div
+                    className="drag-handle"
+                    onMouseDown={(e) => handleElementDragStart(e, index, 'image')}
+                    style={{
+                      position: 'absolute',
+                      top: -15,
+                      left: -15,
+                      width: 12,
+                      height: 12,
+                      backgroundColor: '#fff',
+                      border: '1px solid #ccc',
+                      borderRadius: '50%',
+                      cursor: 'move',
+                      zIndex: 10,
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faArrowsUpDownLeftRight} style={{ fontSize: '8px', color: '#000' }} />
+                  </div>
+                )}
+                <img
+                  src={solution.img}
+                  alt={solution.title}
                   style={{
-                    position: 'absolute',
-                    top: -15,
-                    left: -15,
-                    width: 12,
-                    height: 12,
-                    backgroundColor: '#fff',
-                    border: '1px solid #ccc',
-                    borderRadius: '50%',
-                    cursor: 'move',
-                    zIndex: 10,
+                    width: solution.styles?.image?.width || cardStyles.image.width,
+                    height: solution.styles?.image?.height || cardStyles.image.height,
+                    objectFit: solution.styles?.image?.objectFit || cardStyles.image.objectFit,
+                    borderRadius: solution.styles?.image?.borderRadius || cardStyles.image.borderRadius,
+                    marginBottom: solution.styles?.image?.marginBottom || cardStyles.image.marginBottom,
+                    transition: solution.styles?.image?.transition || cardStyles.image.transition,
+                    opacity: isHovered ? 0 : 1,
+                    zIndex: 2,
                   }}
-                >
-                  <FontAwesomeIcon icon={faArrowsUpDownLeftRight} style={{ fontSize: '8px', color: '#000' }} />
-                </div>
-              )}
-              {(index + 1).toString().padStart(2, '0')}
+                />
+              </div>
+              <div
+                className="draggable-element"
+                style={{
+                  position: 'absolute',
+                  top: solution.positions?.title?.top || 20,
+                  left: solution.positions?.title?.left || 100,
+                  cursor: isSelected ? 'move' : 'default',
+                  width: '100%',
+                }}
+              >
+                {isSelected && (
+                  <div
+                    className="drag-handle"
+                    onMouseDown={(e) => handleElementDragStart(e, index, 'title')}
+                    style={{
+                      position: 'absolute',
+                      top: -15,
+                      left: -15,
+                      width: 12,
+                      height: 12,
+                      backgroundColor: '#fff',
+                      border: '1px solid #ccc',
+                      borderRadius: '50%',
+                      cursor: 'move',
+                      zIndex: 10,
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faArrowsUpDownLeftRight} style={{ fontSize: '8px', color: '#000' }} />
+                  </div>
+                )}
+                <h3 style={{ 
+                  ...solution.styles?.title,
+                  margin: 0,
+                }}>
+                  {solution.title}
+                </h3>
+              </div>
+              <div
+                className="draggable-element"
+                style={{
+                  position: 'absolute',
+                  top: solution.positions?.description?.top || 50,
+                  left: solution.positions?.description?.left || 100,
+                  cursor: isSelected ? 'move' : 'default',
+                  width: '100%',
+                }}
+              >
+                {isSelected && (
+                  <div
+                    className="drag-handle"
+                    onMouseDown={(e) => handleElementDragStart(e, index, 'description')}
+                    style={{
+                      position: 'absolute',
+                      top: -15,
+                      left: -15,
+                      width: 12,
+                      height: 12,
+                      backgroundColor: '#fff',
+                      border: '1px solid #ccc',
+                      borderRadius: '50%',
+                      cursor: 'move',
+                      zIndex: 10,
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faArrowsUpDownLeftRight} style={{ fontSize: '8px', color: '#000' }} />
+                  </div>
+                )}
+                <p style={{ 
+                  ...solution.styles?.description,
+                  margin: 0,
+                }}>
+                  {truncatedDescription}{' '}
+                  {isDescriptionLong && !isHovered && (
+                    <span style={{ 
+                      ...solution.styles?.readMore,
+                      cursor: 'pointer',
+                    }}>
+                      Read more
+                    </span>
+                  )}
+                </p>
+              </div>
             </div>
-            <div
-              className="draggable-element"
-              style={{
-                position: 'absolute',
-                top: solution.positions.title.top,
-                left: solution.positions.title.left,
-                cursor: isSelected ? 'move' : 'default',
-                width: parseInt(cardStyles.card.width) - 50,
-              }}
-            >
-              {isSelected && (
-                <div
-                  className="drag-handle"
-                  onMouseDown={(e) => handleElementDragStart(e, index, 'title')}
-                  style={{
-                    position: 'absolute',
-                    top: -15,
-                    left: -15,
-                    width: 12,
-                    height: 12,
-                    backgroundColor: '#fff',
-                    border: '1px solid #ccc',
-                    borderRadius: '50%',
-                    cursor: 'move',
-                    zIndex: 10,
-                  }}
-                >
-                  <FontAwesomeIcon icon={faArrowsUpDownLeftRight} style={{ fontSize: '8px', color: '#000' }} />
-                </div>
-              )}
-              <h3 style={{ 
-                color: solution.styles?.title?.color || cardStyles.title.color,
-                fontSize: solution.styles?.title?.fontSize || cardStyles.title.fontSize,
-                fontFamily: solution.styles?.title?.fontFamily || cardStyles.title.fontFamily,
-                textAlign: solution.styles?.title?.textAlign || cardStyles.title.textAlign,
-                fontWeight: solution.styles?.title?.fontWeight || cardStyles.title.fontWeight,
-                fontStyle: solution.styles?.title?.fontStyle || cardStyles.title.fontStyle,
-                textDecoration: solution.styles?.title?.textDecoration || cardStyles.title.textDecoration,
-                margin: 0 
-              }}>
-               
-                {solution.title}
-              </h3>
-            </div>
-            <div
-              className="draggable-element"
-              style={{
-                position: 'absolute',
-                top: solution.positions.description.top,
-                left: solution.positions.description.left,
-                cursor: isSelected ? 'move' : 'default',
-                width: parseInt(cardStyles.card.width) - 50,
-              }}
-            >
-              {isSelected && (
-                <div
-                  className="drag-handle"
-                  onMouseDown={(e) => handleElementDragStart(e, index, 'description')}
-                  style={{
-                    position: 'absolute',
-                    top: -15,
-                    left: -15,
-                    width: 12,
-                    height: 12,
-                    backgroundColor: '#fff',
-                    border: '1px solid #ccc',
-                    borderRadius: '50%',
-                    cursor: 'move',
-                    zIndex: 10,
-                  }}
-                >
-                  <FontAwesomeIcon icon={faArrowsUpDownLeftRight} style={{ fontSize: '8px', color: '#000' }} />
-                </div>
-              )}
-              <p style={{ 
-                color: solution.styles?.description?.color || cardStyles.description.color,
-                fontSize: solution.styles?.description?.fontSize || cardStyles.description.fontSize,
-                fontFamily: solution.styles?.description?.fontFamily || cardStyles.description.fontFamily,
-                textAlign: solution.styles?.description?.textAlign || cardStyles.description.textAlign,
-                fontWeight: solution.styles?.description?.fontWeight || cardStyles.description.fontWeight,
-                fontStyle: solution.styles?.description?.fontStyle || cardStyles.description.fontStyle,
-                textDecoration: solution.styles?.description?.textDecoration || cardStyles.description.textDecoration,
-                margin: 0 
-              }}>
-                
-                {solution.description}
-              </p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
-}       
+} 
